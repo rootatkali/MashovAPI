@@ -22,7 +22,7 @@ public class APITest {
   public void login() throws IOException {
     api.fetchSchool(580019);
     assertNotNull(api.getSchool());
-    api.login(2020, "325693455", "Mashov2020");
+    api.login(2020, "325693455", System.getenv("MASHOV_PASSWD"));
     Grade[] grades = api.getGrades();
     assertTrue(grades.length == 36); // Amount of grades
     assertTrue(grades[0].getGrade() == 100);
