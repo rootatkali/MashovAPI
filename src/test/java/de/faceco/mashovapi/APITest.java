@@ -3,6 +3,7 @@ package de.faceco.mashovapi;
 import java.io.IOException;
 import java.util.Arrays;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -13,30 +14,25 @@ import static org.junit.Assert.*;
 
 public class APITest {
   private API api;
+  private LoginInfo li;
   
   @Before
-  public void before() {
+  public void before() throws IOException {
     api = API.getInstance();
+  
+    api.fetchSchool(Secret.SCHOOL_ID);
+    assertNotNull(api.getSchool());
+    li = api.login(2020, Secret.MASHOV_USER, Secret.MASHOV_PASSWD);
+    // Secret class = private information
   }
   
   @Test
-  public void login() throws IOException {
-    // Variables from the Secret class are private information
-    api.fetchSchool(Secret.SCHOOL_ID);
-    assertNotNull(api.getSchool());
-    LoginInfo li = api.login(2020, Secret.MASHOV_USER, Secret.MASHOV_PASSWD);
-    Group[] groups = api.getGroups();
-
-    Group math = null;
-    for (Group g : groups) {
-      if (g.getGroupTeachers()[0].getTeacherName().equals(Secret.MATH_TEACHER)) {
-        math = g;
-        break;
-      }
-    }
-    assertNotNull(math);
-    assertNotNull(api.getGroupMembers(math));
-
+  public void timetableRequest() throws IOException {
+    assertEquals(Secret.LESSON_COUNT, api.getTimetable().length);
+  }
+  
+  @After
+  public void after() throws IOException {
     assertEquals(200, api.logout());
   }
 }

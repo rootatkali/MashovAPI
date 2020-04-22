@@ -11,35 +11,27 @@ public class RequestController {
    * This is the base URL of the Mashov API
    */
   public static final String BASE_URL = "https://web.mashov.info/api";
-  public static final String USER_AGENT = "Mozilla/5.0";
-  public static final int TIMEOUT = 10000;
   private static Gson gson = new Gson();
   private static OkHttpClient http = new OkHttpClient().newBuilder().build();
-  private static String csrfToken;
+  private static String csrfToken = null;
   private static Map<String, String> cookies = new HashMap<>();
   
   public static School[] getSchools() throws IOException {
-    School[] ret;
-    
     Request request = new Request.Builder()
         .url(BASE_URL + "/schools")
         .method("GET", null)
         .build();
-    
     Response response = http.newCall(request).execute();
     
-    String content = response.body().string();
-    
-    ret = gson.fromJson(content, School[].class);
-    Arrays.sort(ret); // Sorts schools by id from smallest to largest
-    
-    return ret;
+    return gson.fromJson(response.body().string(), School[].class);
   }
   
   public static LoginInfo login(School s, int year, String user, String pass) throws IOException {
     Login l = new Login(s, year, user, pass);
+    
     MediaType json = MediaType.parse("application/json");
     RequestBody body = RequestBody.create(gson.toJson(l), json);
+    
     Request request = new Request.Builder()
         .url(BASE_URL + "/login/")
         .method("POST", body)
@@ -48,19 +40,23 @@ public class RequestController {
     Response response = http.newCall(request).execute();
     
     cookies.clear();
+    csrfToken = null;
+    
     Headers headers = response.headers();
     csrfToken = Cookie.parse(request.url() ,headers.get("Set-Cookie")).value();
     List<String> rawCookies = headers.values("Set-Cookie");
+    
     for (String c : rawCookies) {
       String[] split = c.trim().split("=", 2);
       cookies.put(split[0], split[1].substring(0, split[1].indexOf(";")));
     }
+    
     return gson.fromJson(response.body().string(), LoginInfo.class);
   }
   
   /**
    * Generates a cookie HTTP request header from the cookies entered at login;
-   * @return
+   * @return a <code>Cookie</code> header with the required cookies.
    */
   private static String cookieHeader() {
     StringBuilder sb = new StringBuilder();
@@ -124,8 +120,23 @@ public class RequestController {
     return gson.fromJson(response.body().string(), Period[].class);
   }
   
-  // TODO: Get timetable
+  public static Lesson[] timetable(String uid) throws IOException {
+    Request request = new Request.Builder()
+        .url(BASE_URL + "/students/" + uid + "/timetable")
+        .method("GET", null)
+        .addHeader("x-csrf-token", csrfToken)
+        .addHeader("Cookie", cookieHeader())
+        .build();
+    Response response = http.newCall(request).execute();
+    return gson.fromJson(response.body().string(), Lesson[].class);
+  }
   
+  /**
+   * Asks the server for the saved picture of a user.
+   * @param uid The Mashov UUID of the user.
+   * @return An array of bytes corresponding to the user picture in JPG format.
+   * @throws IOException In case of an I/O server exception or an unauthorized request.
+   */
   public static byte[] picture(String uid) throws IOException {
     Request request = new Request.Builder()
         .url(BASE_URL + "/user/" + uid + "/picture")
@@ -164,6 +175,11 @@ public class RequestController {
     return gson.fromJson(response.body().string(), Contact[].class);
   }
   
+  /**
+   * Attempts to send a logout request to Mashov.
+   * @return The status code of the logout GET request, should be 200 if OK.
+   * @throws IOException In case of an I/O exception.
+   */
   public static int logout() throws IOException {
     Request request = new Request.Builder()
         .url(BASE_URL + "/logout")

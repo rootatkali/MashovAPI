@@ -40,4 +40,5 @@ gradle-app.setting
 # User pic
 picture.jpg
 
+# Used in all places where private information is required for testing purposes.
 /**/Secret.java

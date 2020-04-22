@@ -3,9 +3,13 @@ package de.faceco.mashovapi;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Arrays;
 
 import de.faceco.mashovapi.components.*;
 
+/**
+ * The main class of the MashovAPI library. All requests to the Mashov servers should be
+ */
 public class API {
   private School school;
   private String uid; // Unique User ID gave by the Mashov interface
@@ -33,29 +37,33 @@ public class API {
   
   /**
    * Tries to fetch a school with a given ID.
+   * <p>If the school is found, the school will be auto-saved in the API instance, although it
+   * can be changed using the {@link #setSchool(School)} method.</p>
    * @param id The school ID, as specified by the Ministry of Education.
+   * @return The school with the specified ID.
    * @throws IOException If an IO exception occurs
+   * @throws IllegalArgumentException If the school is not found in the database.
    */
-  public void fetchSchool(int id) throws IOException {
+  public School fetchSchool(int id) throws IOException, IllegalArgumentException {
     School[] schools = RequestController.getSchools();
     for (School s: schools) {
       if (s.getId() == id) {
         school = s;
-        return;
+        return s;
       }
     }
-    throw new RuntimeException("School with ID " + id + " not found.");
+    throw new IllegalArgumentException("School with ID " + id + " not found.");
   }
   
   public School[] allSchools() throws IOException {
-    return RequestController.getSchools();
+    School[] schools = RequestController.getSchools();
+    Arrays.sort(schools);
+    return schools;
   }
   
   public LoginInfo login(int year, String user, String pass) throws IOException {
     LoginInfo li = RequestController.login(school, year, user, pass);
-    
     this.uid = li.getCredential().getUserId();
-    
     return li;
   }
   
@@ -83,10 +91,27 @@ public class API {
     return RequestController.bells();
   }
   
+  public Lesson[] getTimetable() throws IOException {
+    Lesson[] timetable = RequestController.timetable(uid);
+    Arrays.sort(timetable);
+    return timetable;
+  }
+  
+  /**
+   * Attempts to log out from Mashov.
+   * @return The status code of the logout GET request, should be 200 if OK.
+   * @throws IOException In case of an I/O exception.
+   */
   public int logout() throws IOException {
     return RequestController.logout();
   }
   
+  /**
+   * Asks the server for the saved picture of a user. Saves the picture in a File, and returns
+   * the file.
+   * @return The {@link File} object encoding the user JPG picture.
+   * @throws IOException In case of an I/O exception or an unauthorized request.
+   */
   public File getPicture() throws IOException {
     File pic = new File("picture.jpg");
     Files.write(pic.toPath(), RequestController.picture(uid));
