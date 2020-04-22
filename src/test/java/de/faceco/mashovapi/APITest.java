@@ -21,21 +21,22 @@ public class APITest {
   
   @Test
   public void login() throws IOException {
-    api.fetchSchool(580019);
+    // Variables from the Secret class are private information
+    api.fetchSchool(Secret.SCHOOL_ID);
     assertNotNull(api.getSchool());
-    LoginInfo li = api.login(2020, "325693455", System.getenv("MASHOV_PASSWD"));
+    LoginInfo li = api.login(2020, Secret.MASHOV_USER, Secret.MASHOV_PASSWD);
     Group[] groups = api.getGroups();
-    
+
     Group math = null;
     for (Group g : groups) {
-      if (g.getGroupTeachers()[0].getTeacherName().equals("ליבנר ברוס")) {
+      if (g.getGroupTeachers()[0].getTeacherName().equals(Secret.MATH_TEACHER)) {
         math = g;
         break;
       }
     }
     assertNotNull(math);
     assertNotNull(api.getGroupMembers(math));
-  
+
     assertEquals(200, api.logout());
   }
 }
