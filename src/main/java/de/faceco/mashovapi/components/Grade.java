@@ -1,8 +1,10 @@
 package de.faceco.mashovapi.components;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ComparisonChain;
+import org.jetbrains.annotations.NotNull;
 
-public class Grade {
+public class Grade implements Comparable<Grade>{
   private String studentGuid;
   private int gradingEventId;
   private int grade;
@@ -102,5 +104,10 @@ public class Grade {
         eventDate).add("id", id).add("gradingPeriod", gradingPeriod).add("gradingEvent",
         gradingEvent).add("gradeRate", gradeRate).add("gradeTypeId", gradeTypeId).add("gradeType"
         , gradeType).toString();
+  }
+  
+  @Override
+  public int compareTo(Grade g) {
+    return ComparisonChain.start().compare(grade, g.grade).result();
   }
 }

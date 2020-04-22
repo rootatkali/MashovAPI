@@ -6,6 +6,7 @@ import java.util.Objects;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ComparisonChain;
 import com.google.gson.annotations.Expose;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Represents a school registered in the Mashov system.
@@ -19,7 +20,7 @@ public class School implements Comparable<School> {
   private String name;
   private int[] years;
   
-  @Expose(serialize = true, deserialize = false)
+  @Expose(deserialize = false)
   private boolean top;
   
   /**
@@ -75,7 +76,7 @@ public class School implements Comparable<School> {
   }
   
   @Override
-  public int compareTo(School s) {
+  public int compareTo(@NotNull School s) {
     return ComparisonChain.start().compare(semel, s.semel).result();
   }
 }

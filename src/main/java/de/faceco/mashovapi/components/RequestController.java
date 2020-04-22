@@ -6,7 +6,7 @@ import java.util.*;
 import com.google.gson.Gson;
 import okhttp3.*;
 
-public class Requester {
+public class RequestController {
   /**
    * This is the base URL of the Mashov API
    */
@@ -19,7 +19,7 @@ public class Requester {
   private static Map<String, String> cookies = new HashMap<>();
   
   public static School[] getSchools() throws IOException {
-    School[] ret = null;
+    School[] ret;
     
     Request request = new Request.Builder()
         .url(BASE_URL + "/schools")
@@ -46,6 +46,8 @@ public class Requester {
         .addHeader("Content-Type", "application/json")
         .build();
     Response response = http.newCall(request).execute();
+    
+    cookies.clear();
     Headers headers = response.headers();
     csrfToken = Cookie.parse(request.url() ,headers.get("Set-Cookie")).value();
     List<String> rawCookies = headers.values("Set-Cookie");
@@ -57,7 +59,7 @@ public class Requester {
   }
   
   /**
-   * A way to use cookies
+   * Generates a cookie HTTP request header from the cookies entered at login;
    * @return
    */
   private static String cookieHeader() {
@@ -87,7 +89,6 @@ public class Requester {
     return gson.fromJson(response.body().string(), Grade[].class);
   }
   
-  // TODO: Get birthday
   public static Birthday birthday(String uid) throws IOException {
     Request request = new Request.Builder()
         .url(BASE_URL + "/user/" + uid + "/birthday")
@@ -99,17 +100,80 @@ public class Requester {
     return gson.fromJson(response.body().string(), Birthday.class);
   }
   
+  public static Group[] groups(String uid) throws IOException {
+    Request request = new Request.Builder()
+        .url(BASE_URL + "/students/" + uid + "/groups")
+        .method("GET", null)
+        .addHeader("x-csrf-token", csrfToken)
+        .addHeader("Cookie", cookieHeader())
+        .build();
+    Response response = http.newCall(request).execute();
+    return gson.fromJson(response.body().string(), Group[].class);
+  }
+  
   // TODO: Get teachers
+  
+  public static Period[] bells() throws IOException {
+    Request request = new Request.Builder()
+        .url(BASE_URL + "/bells")
+        .method("GET", null)
+        .addHeader("x-csrf-token", csrfToken)
+        .addHeader("Cookie", cookieHeader())
+        .build();
+    Response response = http.newCall(request).execute();
+    return gson.fromJson(response.body().string(), Period[].class);
+  }
   
   // TODO: Get timetable
   
-  // TODO: Get picture
+  public static byte[] picture(String uid) throws IOException {
+    Request request = new Request.Builder()
+        .url(BASE_URL + "/user/" + uid + "/picture")
+        .method("GET", null)
+        .addHeader("x-csrf-token", csrfToken)
+        .addHeader("Cookie", cookieHeader())
+        .build();
+    Response response = http.newCall(request).execute();
+    System.out.println(response.headers());
+    return response.body().bytes();
+  }
   
   // TODO: Get mail
   
-  // TODO: Get lessons
-  
   // TODO: Get behaves
+  
+  public static Contact[] classContacts(String uid) throws IOException {
+    Request request = new Request.Builder()
+        .url(BASE_URL + "/students/" + uid + "/alfon")
+        .method("GET", null)
+        .addHeader("x-csrf-token", csrfToken)
+        .addHeader("Cookie", cookieHeader())
+        .build();
+    Response response = http.newCall(request).execute();
+    return gson.fromJson(response.body().string(), Contact[].class);
+  }
+  
+  public static Contact[] groupContacts(int guid) throws IOException {
+    Request request = new Request.Builder()
+        .url(BASE_URL + "/groups/" + guid + "/alfon")
+        .method("GET", null)
+        .addHeader("x-csrf-token", csrfToken)
+        .addHeader("Cookie", cookieHeader())
+        .build();
+    Response response = http.newCall(request).execute();
+    return gson.fromJson(response.body().string(), Contact[].class);
+  }
+  
+  public static int logout() throws IOException {
+    Request request = new Request.Builder()
+        .url(BASE_URL + "/logout")
+        .method("GET", null)
+        .addHeader("x-csrf-token", csrfToken)
+        .addHeader("Cookie", cookieHeader())
+        .build();
+    Response response = http.newCall(request).execute();
+    return response.code();
+  }
   
   public static School jsonToSchool(String json) {
     return gson.fromJson(json, School.class);
