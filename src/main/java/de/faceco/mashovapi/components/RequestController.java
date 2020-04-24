@@ -107,8 +107,6 @@ public class RequestController {
     return gson.fromJson(response.body().string(), Group[].class);
   }
   
-  // TODO: Get teachers
-  
   public static Period[] bells() throws IOException {
     Request request = new Request.Builder()
         .url(BASE_URL + "/bells")
@@ -145,11 +143,30 @@ public class RequestController {
         .addHeader("Cookie", cookieHeader())
         .build();
     Response response = http.newCall(request).execute();
-    System.out.println(response.headers());
     return response.body().bytes();
   }
   
-  // TODO: Get mail
+  public static Conversation[] inbox(int skip, int take) throws IOException {
+    Request request = new Request.Builder()
+        .url(BASE_URL + String.format("/mail/inbox/conversations?skip=%d&take=%d", skip, take))
+        .method("GET", null)
+        .addHeader("x-csrf-token", csrfToken)
+        .addHeader("Cookie", cookieHeader())
+        .build();
+    Response response = http.newCall(request).execute();
+    return gson.fromJson(response.body().string(), Conversation[].class);
+  }
+  
+  public static Conversation singleCon(String cid) throws IOException {
+    Request request = new Request.Builder()
+        .url(BASE_URL + "/mail/conversations/" + cid)
+        .method("GET", null)
+        .addHeader("x-csrf-token", csrfToken)
+        .addHeader("Cookie", cookieHeader())
+        .build();
+    Response response = http.newCall(request).execute();
+    return gson.fromJson(response.body().string(), Conversation.class);
+  }
   
   // TODO: Get behaves
   

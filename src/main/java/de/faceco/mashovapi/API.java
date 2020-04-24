@@ -14,6 +14,8 @@ public class API {
   private School school;
   private String uid; // Unique User ID gave by the Mashov interface
   
+  private int mailPage;
+  
   private static API singleton;
   
   public static API getInstance() {
@@ -24,7 +26,7 @@ public class API {
   }
   
   private API() {
-  
+    mailPage = 20;
   }
   
   public void setSchool(School school) {
@@ -33,6 +35,14 @@ public class API {
   
   public School getSchool() {
     return school;
+  }
+  
+  public int getMailPage() {
+    return mailPage;
+  }
+  
+  public void setMailPage(int mailPage) {
+    this.mailPage = mailPage;
   }
   
   /**
@@ -95,6 +105,28 @@ public class API {
     Lesson[] timetable = RequestController.timetable(uid);
     Arrays.sort(timetable);
     return timetable;
+  }
+  
+  /**
+   * Attempts to fetch the nth page of the user's inbox.
+   * @param page The page in the inbox. First page is 0, and each page contains 20 conversations
+   *             (configurable through {@link #setMailPage(int)}.)
+   * @return An array of Conversations, with no message bodies or lists of recipients.
+   * @throws IOException In case of an I/O error.
+   * @see #getMessages(Conversation)
+   */
+  public Conversation[] getInbox(int page) throws IOException {
+    return RequestController.inbox(20 * page, page);
+  }
+  
+  /**
+   * Attempts to fetch the missing details about a Conversation - messages and recipients.
+   * @param c The Conversation to look in.
+   * @return A Conversation element with all the required detailed.
+   * @throws IOException In case of an I/O error.
+   */
+  public Conversation getMessages(Conversation c) throws IOException {
+    return RequestController.singleCon(c.getConversationId());
   }
   
   /**

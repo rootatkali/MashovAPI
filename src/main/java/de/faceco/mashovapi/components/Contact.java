@@ -2,8 +2,10 @@ package de.faceco.mashovapi.components;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
+import com.google.common.collect.ComparisonChain;
+import org.jetbrains.annotations.NotNull;
 
-public class Contact {
+public class Contact implements Comparable<Contact> {
   private String studentGuid;
   private String familyName;
   private String privateName;
@@ -95,5 +97,14 @@ public class Contact {
   public int hashCode() {
     return Objects.hashCode(studentGuid, familyName, privateName, classCode, classNum, city,
         address, city1, address1, city2, address2, phone, cellphone);
+  }
+  
+  @Override
+  public int compareTo(@NotNull Contact c) {
+    return ComparisonChain.start()
+        .compare(familyName, c.familyName)
+        .compare(privateName, c.privateName)
+        .compare(city, c.city)
+        .result();
   }
 }

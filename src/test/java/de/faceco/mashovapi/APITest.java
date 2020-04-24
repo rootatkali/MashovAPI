@@ -7,10 +7,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.faceco.mashovapi.components.Group;
-import de.faceco.mashovapi.components.LoginInfo;
+import de.faceco.mashovapi.components.*;
 
 import static org.junit.Assert.*;
+
+import static de.faceco.mashovapi.Secret.*;
 
 public class APITest {
   private API api;
@@ -20,15 +21,50 @@ public class APITest {
   public void before() throws IOException {
     api = API.getInstance();
   
-    api.fetchSchool(Secret.SCHOOL_ID);
+    api.fetchSchool(SCHOOL_ID);
     assertNotNull(api.getSchool());
-    li = api.login(2020, Secret.MASHOV_USER, Secret.MASHOV_PASSWD);
+    li = api.login(2020, MASHOV_USER, MASHOV_PASSWD);
     // Secret class = private information
+    assertNotNull(li);
   }
   
   @Test
-  public void timetableRequest() throws IOException {
-    assertEquals(Secret.LESSON_COUNT, api.getTimetable().length);
+  public void loginInfo() throws IOException {
+    assertEquals(li.getCredential().getIdNumber(), ID_NUM);
+    assertEquals(li.getAccessToken().getSchoolOptions().getMoodleSite(), MOODLE_SITE);
+    assertTrue(li.getAccessToken().getUserOptions().hasEmailNotifications());
+    assertEquals(li.getCredential().getSchoolId(), api.getSchool().getId());
+  }
+  
+  @Test
+  public void grades() throws IOException {
+    Grade[] grades = api.getGrades();
+    assertNotNull(grades);
+    Arrays.sort(grades);
+    
+    assertEquals(100, grades[grades.length - 1].getGrade());
+  }
+  
+  @Test
+  public void groups() throws IOException {
+    assertTrue(api.getGroups().length > 0);
+  }
+  
+  @Test
+  public void birthday() throws IOException {
+    assertEquals(BDAY_YEAR, api.getBirthday().getYear());
+  }
+  
+  @Test
+  public void classMembers() throws IOException {
+    Contact[] classMembers = api.getClassMembers();
+    Arrays.sort(classMembers);
+    assertEquals(FIRST_CLASSMATE, classMembers[0].getFamilyName());
+  }
+  
+  @Test
+  public void timetable() throws IOException {
+    assertEquals(LESSON_COUNT, api.getTimetable().length);
   }
   
   @After
