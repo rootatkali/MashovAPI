@@ -1,9 +1,10 @@
 plugins {
   id 'java'
+  id "com.jfrog.bintray" version "1.8.4"
 }
 
 group 'de.faceco'
-version '1.0-SNAPSHOT'
+version '1.0.0'
 
 repositories {
   jcenter()
@@ -14,4 +15,37 @@ dependencies {
   implementation 'com.google.code.gson:gson:2.8.6'
   implementation 'com.google.guava:guava:29.0-jre'
   implementation 'com.squareup.okhttp3:okhttp:4.5.0'
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+  classifier = 'sources'
+  from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+  classifier = 'javadoc'
+  from javadoc.destinationDir
+}
+
+artifacts {
+  archives sourcesJar
+  archives javadocJar
+}
+
+bintray {
+  user = BINTRAY_USER
+  key = BINTRAY_TOKEN
+  configurations = ['archives']
+  pkg {
+    repo = 'facecode'
+    name = 'MashovAPI'
+    licenses = ['MIT']
+    vcsUrl = 'https://github.com/rootatkali/MashovAPI.git'
+    version {
+      name = '1.0'
+      desc = 'MashovAPI version 1.0'
+      released = new Date()
+      vcsTag = '1.0'
+    }
+  }
 }
