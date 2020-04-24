@@ -22,6 +22,7 @@ public class API {
     if (singleton == null) {
       singleton = new API();
     }
+
     return singleton;
   }
   
