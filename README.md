@@ -7,6 +7,7 @@ This is how to start using the API:
 API api = API.getInstance();
 ```
 The first step is to fetch a single school, or all of the schools:
+
 ```java
 // Single school
 int schoolId = 580019;
@@ -17,6 +18,7 @@ School[] all = api.allSchools();
 ```
 
 After selecting a school, you need to log in:
+
 ```java
 LoginInfo loginInfo = api.login(2020, "username", "password");
 ```
