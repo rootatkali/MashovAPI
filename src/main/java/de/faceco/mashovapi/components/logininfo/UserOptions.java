@@ -3,7 +3,7 @@ package de.faceco.mashovapi.components.logininfo;
 import com.google.common.base.MoreObjects;
 
 public class UserOptions {
-  private int pushOptions;
+  private long pushOptions;
   private boolean emailNotifications;
   private boolean shareInfoToLnet;
   
@@ -11,7 +11,7 @@ public class UserOptions {
   
   }
   
-  public int getPushOptions() {
+  public long getPushOptions() {
     return pushOptions;
   }
   

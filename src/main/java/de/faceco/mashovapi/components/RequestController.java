@@ -16,7 +16,7 @@ public class RequestController {
   private static String csrfToken = null;
   private static Map<String, String> cookies = new HashMap<>();
   
-  public static School[] getSchools() throws IOException {
+  public static School[] schools() throws IOException {
     Request request = new Request.Builder()
         .url(BASE_URL + "/schools")
         .method("GET", null)
@@ -33,7 +33,7 @@ public class RequestController {
     RequestBody body = RequestBody.create(gson.toJson(l), json);
     
     Request request = new Request.Builder()
-        .url(BASE_URL + "/login/")
+        .url(BASE_URL + "/login")
         .method("POST", body)
         .addHeader("Content-Type", "application/json")
         .build();

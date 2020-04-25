@@ -20,7 +20,7 @@ public class RequestControllerTest {
     School ky = null;
     
     try {
-      School[] schools = RequestController.getSchools();
+      School[] schools = RequestController.schools();
       System.out.println(schools.length);
       //System.out.println(Arrays.toString(schools));
       for (School s : schools) {

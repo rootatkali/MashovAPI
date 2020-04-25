@@ -1,10 +1,17 @@
 plugins {
   id 'java'
+  id 'maven'
+  id 'maven-publish'
   id "com.jfrog.bintray" version "1.8.4"
 }
 
 group 'de.faceco'
-version '1.0.0'
+version '1.0.3-a'
+
+java {
+  sourceCompatibility = JavaVersion.VERSION_1_8
+  targetCompatibility = JavaVersion.VERSION_1_8
+}
 
 repositories {
   jcenter()
@@ -13,7 +20,7 @@ repositories {
 dependencies {
   testImplementation 'junit:junit:4.12'
   implementation 'com.google.code.gson:gson:2.8.6'
-  implementation 'com.google.guava:guava:29.0-jre'
+  implementation 'com.google.guava:guava:29.0-android'
   implementation 'com.squareup.okhttp3:okhttp:4.5.0'
 }
 
@@ -27,6 +34,30 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
   from javadoc.destinationDir
 }
 
+task writeNewPom {
+  doLast {
+    pom {
+      project {
+        groupId 'de.faceco'
+        artifactId 'MashovAPI'
+        version '1.0.3-a'
+        inceptionYear '2020'
+      }
+    }.writeTo("pom.xml")
+  }
+}
+
+publishing {
+  publications {
+    MashovPub(MavenPublication) {
+      from components.java
+      groupId 'de.faceco'
+      artifactId 'mashovapi'
+      version '1.0.3-a'
+    }
+  }
+}
+
 artifacts {
   archives sourcesJar
   archives javadocJar
@@ -35,17 +66,17 @@ artifacts {
 bintray {
   user = BINTRAY_USER
   key = BINTRAY_TOKEN
-  configurations = ['archives']
+  publications = ['MashovPub']
   pkg {
     repo = 'facecode'
     name = 'MashovAPI'
     licenses = ['MIT']
     vcsUrl = 'https://github.com/rootatkali/MashovAPI.git'
     version {
-      name = '1.0'
-      desc = 'MashovAPI version 1.0'
+      name = '1.0.3-a'
+      desc = 'MashovAPI version 1.0.3-a'
       released = new Date()
-      vcsTag = '1.0'
+      vcsTag = '1.0.3-a'
     }
   }
 }

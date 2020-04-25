@@ -56,7 +56,7 @@ public class API {
    * @throws IllegalArgumentException If the school is not found in the database.
    */
   public School fetchSchool(int id) throws IOException, IllegalArgumentException {
-    School[] schools = RequestController.getSchools();
+    School[] schools = RequestController.schools();
     for (School s: schools) {
       if (s.getId() == id) {
         school = s;
@@ -67,7 +67,7 @@ public class API {
   }
   
   public School[] allSchools() throws IOException {
-    School[] schools = RequestController.getSchools();
+    School[] schools = RequestController.schools();
     Arrays.sort(schools);
     return schools;
   }
