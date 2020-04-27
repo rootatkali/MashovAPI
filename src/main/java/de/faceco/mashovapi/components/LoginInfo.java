@@ -3,7 +3,10 @@ package de.faceco.mashovapi.components;
 import com.google.common.base.MoreObjects;
 import de.faceco.mashovapi.components.logininfo.*;
 
-public class LoginInfo {
+/**
+ * This class detonates a successful login request
+ */
+public class LoginInfo implements LoginResponse {
   private String sessionId;
   private Credential credential;
   private AccessToken accessToken;

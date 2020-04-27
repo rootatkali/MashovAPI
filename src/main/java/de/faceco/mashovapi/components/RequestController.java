@@ -11,22 +11,25 @@ public class RequestController {
    * This is the base URL of the Mashov API
    */
   public static final String BASE_URL = "https://web.mashov.info/api";
+  private static final String USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) " +
+      "Chrome/81.0.4044.122 Safari/537.36";
   private static Gson gson = new Gson();
   private static OkHttpClient http = new OkHttpClient().newBuilder().build();
   private static String csrfToken = null;
-  private static Map<String, String> cookies = new HashMap<>();
+  private static final Map<String, String> cookies = new HashMap<>();
   
   public static School[] schools() throws IOException {
     Request request = new Request.Builder()
         .url(BASE_URL + "/schools")
         .method("GET", null)
+        .addHeader("User-Agent", USER_AGENT)
         .build();
     Response response = http.newCall(request).execute();
     
     return gson.fromJson(response.body().string(), School[].class);
   }
   
-  public static LoginInfo login(School s, int year, String user, String pass) throws IOException {
+  public static LoginResponse login(School s, int year, String user, String pass) throws IOException {
     Login l = new Login(s, year, user, pass);
     
     MediaType json = MediaType.parse("application/json");
@@ -35,15 +38,23 @@ public class RequestController {
     Request request = new Request.Builder()
         .url(BASE_URL + "/login")
         .method("POST", body)
+        .addHeader("User-Agent", USER_AGENT)
         .addHeader("Content-Type", "application/json")
         .build();
     Response response = http.newCall(request).execute();
+    
+    int code = response.code();
+    if (code != 200) {
+      LoginFailed fail = gson.fromJson(response.body().string(), LoginFailed.class);
+      fail.setErrorCode(code);
+      return fail;
+    }
     
     cookies.clear();
     csrfToken = null;
     
     Headers headers = response.headers();
-    csrfToken = Cookie.parse(request.url() ,headers.get("Set-Cookie")).value();
+    csrfToken = Cookie.parse(request.url(), headers.get("Set-Cookie")).value();
     List<String> rawCookies = headers.values("Set-Cookie");
     
     for (String c : rawCookies) {
@@ -56,6 +67,7 @@ public class RequestController {
   
   /**
    * Generates a cookie HTTP request header from the cookies entered at login;
+   *
    * @return a <code>Cookie</code> header with the required cookies.
    */
   private static String cookieHeader() {
@@ -67,21 +79,35 @@ public class RequestController {
       );
     }
     String cookieHeader = sb.toString();
-  
+    
     if (cookieHeader.lastIndexOf(";") == cookieHeader.length() - 1) {
       cookieHeader = cookieHeader.substring(0, cookieHeader.length() - 1);
     }
     return cookieHeader;
   }
   
-  public static Grade[] grades(String uid) throws IOException {
+  /**
+   * Attempts to perform a GET request to the API, based on the requested path.
+   *
+   * <p>The request has the following headers:
+   * User-Agent, Cookie, x-csrf-token</p>
+   * @param path The path to the API contents.
+   * @return A {@link Response} corresponding to the API server's response.
+   * @throws IOException If anything goes wrong.
+   */
+  private static Response makeApiRequest(String path) throws IOException {
     Request request = new Request.Builder()
-        .url(BASE_URL + "/students/" + uid + "/grades")
+        .url(BASE_URL + path)
         .method("GET", null)
+        .addHeader("User-Agent", USER_AGENT)
         .addHeader("x-csrf-token", csrfToken)
         .addHeader("Cookie", cookieHeader())
         .build();
-    Response response = http.newCall(request).execute();
+    return http.newCall(request).execute();
+  }
+  
+  public static Grade[] grades(String uid) throws IOException {
+    Response response = makeApiRequest("/students/" + uid + "/grades");
     return gson.fromJson(response.body().string(), Grade[].class);
   }
   
@@ -89,6 +115,7 @@ public class RequestController {
     Request request = new Request.Builder()
         .url(BASE_URL + "/user/" + uid + "/birthday")
         .method("GET", null)
+        .addHeader("User-Agent", USER_AGENT)
         .addHeader("x-csrf-token", csrfToken)
         .addHeader("Cookie", cookieHeader())
         .build();
@@ -97,114 +124,65 @@ public class RequestController {
   }
   
   public static Group[] groups(String uid) throws IOException {
-    Request request = new Request.Builder()
-        .url(BASE_URL + "/students/" + uid + "/groups")
-        .method("GET", null)
-        .addHeader("x-csrf-token", csrfToken)
-        .addHeader("Cookie", cookieHeader())
-        .build();
-    Response response = http.newCall(request).execute();
+    Response response = makeApiRequest("/students/" + uid + "/groups");
     return gson.fromJson(response.body().string(), Group[].class);
   }
   
   public static Period[] bells() throws IOException {
-    Request request = new Request.Builder()
-        .url(BASE_URL + "/bells")
-        .method("GET", null)
-        .addHeader("x-csrf-token", csrfToken)
-        .addHeader("Cookie", cookieHeader())
-        .build();
-    Response response = http.newCall(request).execute();
+    Response response = makeApiRequest("/bells");
     return gson.fromJson(response.body().string(), Period[].class);
   }
   
   public static Lesson[] timetable(String uid) throws IOException {
-    Request request = new Request.Builder()
-        .url(BASE_URL + "/students/" + uid + "/timetable")
-        .method("GET", null)
-        .addHeader("x-csrf-token", csrfToken)
-        .addHeader("Cookie", cookieHeader())
-        .build();
-    Response response = http.newCall(request).execute();
+    Response response = makeApiRequest("/students/" + uid + "/timetable");
     return gson.fromJson(response.body().string(), Lesson[].class);
   }
   
   /**
    * Asks the server for the saved picture of a user.
+   *
    * @param uid The Mashov UUID of the user.
    * @return An array of bytes corresponding to the user picture in JPG format.
    * @throws IOException In case of an I/O server exception or an unauthorized request.
    */
   public static byte[] picture(String uid) throws IOException {
-    Request request = new Request.Builder()
-        .url(BASE_URL + "/user/" + uid + "/picture")
-        .method("GET", null)
-        .addHeader("x-csrf-token", csrfToken)
-        .addHeader("Cookie", cookieHeader())
-        .build();
-    Response response = http.newCall(request).execute();
+    Response response = makeApiRequest("/user/" + uid + "/picture");
     return response.body().bytes();
   }
   
   public static Conversation[] inbox(int skip, int take) throws IOException {
-    Request request = new Request.Builder()
-        .url(BASE_URL + String.format("/mail/inbox/conversations?skip=%d&take=%d", skip, take))
-        .method("GET", null)
-        .addHeader("x-csrf-token", csrfToken)
-        .addHeader("Cookie", cookieHeader())
-        .build();
-    Response response = http.newCall(request).execute();
+    Response response = makeApiRequest(String.format("/mail/inbox/conversations?skip=%d&take=%d", skip, take));
     return gson.fromJson(response.body().string(), Conversation[].class);
   }
   
   public static Conversation singleCon(String cid) throws IOException {
-    Request request = new Request.Builder()
-        .url(BASE_URL + "/mail/conversations/" + cid)
-        .method("GET", null)
-        .addHeader("x-csrf-token", csrfToken)
-        .addHeader("Cookie", cookieHeader())
-        .build();
-    Response response = http.newCall(request).execute();
+    Response response = makeApiRequest("/mail/conversations/" + cid);
     return gson.fromJson(response.body().string(), Conversation.class);
   }
   
-  // TODO: Get behaves
-  
   public static Contact[] classContacts(String uid) throws IOException {
-    Request request = new Request.Builder()
-        .url(BASE_URL + "/students/" + uid + "/alfon")
-        .method("GET", null)
-        .addHeader("x-csrf-token", csrfToken)
-        .addHeader("Cookie", cookieHeader())
-        .build();
-    Response response = http.newCall(request).execute();
+    Response response = makeApiRequest("/students/" + uid + "/alfon");
     return gson.fromJson(response.body().string(), Contact[].class);
   }
   
   public static Contact[] groupContacts(int guid) throws IOException {
-    Request request = new Request.Builder()
-        .url(BASE_URL + "/groups/" + guid + "/alfon")
-        .method("GET", null)
-        .addHeader("x-csrf-token", csrfToken)
-        .addHeader("Cookie", cookieHeader())
-        .build();
-    Response response = http.newCall(request).execute();
+    Response response = makeApiRequest("/groups/" + guid + "/alfon");
     return gson.fromJson(response.body().string(), Contact[].class);
+  }
+  
+  public static Behave[] behaves(String uid) throws IOException {
+    Response response = makeApiRequest("/students/" + uid + "/behave");
+    return gson.fromJson(response.body().string(), Behave[].class);
   }
   
   /**
    * Attempts to send a logout request to Mashov.
+   *
    * @return The status code of the logout GET request, should be 200 if OK.
    * @throws IOException In case of an I/O exception.
    */
   public static int logout() throws IOException {
-    Request request = new Request.Builder()
-        .url(BASE_URL + "/logout")
-        .method("GET", null)
-        .addHeader("x-csrf-token", csrfToken)
-        .addHeader("Cookie", cookieHeader())
-        .build();
-    Response response = http.newCall(request).execute();
+    Response response = makeApiRequest("/logout");
     return response.code();
   }
   

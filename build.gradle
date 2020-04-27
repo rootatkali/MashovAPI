@@ -5,8 +5,10 @@ plugins {
   id "com.jfrog.bintray" version "1.8.4"
 }
 
+def ver = '1.0.4-android'
+
 group 'de.faceco'
-version '1.0.3-a'
+version ver
 
 java {
   sourceCompatibility = JavaVersion.VERSION_1_8
@@ -34,26 +36,16 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
   from javadoc.destinationDir
 }
 
-task writeNewPom {
-  doLast {
-    pom {
-      project {
-        groupId 'de.faceco'
-        artifactId 'MashovAPI'
-        version '1.0.3-a'
-        inceptionYear '2020'
-      }
-    }.writeTo("pom.xml")
-  }
-}
-
 publishing {
   publications {
     MashovPub(MavenPublication) {
       from components.java
       groupId 'de.faceco'
       artifactId 'mashovapi'
-      version '1.0.3-a'
+      version ver
+
+      artifact tasks.sourcesJar
+      artifact tasks.javadocJar
     }
   }
 }
@@ -73,10 +65,10 @@ bintray {
     licenses = ['MIT']
     vcsUrl = 'https://github.com/rootatkali/MashovAPI.git'
     version {
-      name = '1.0.3-a'
-      desc = 'MashovAPI version 1.0.3-a'
+      name = ver
+      desc = 'MashovAPI version ' + ver
       released = new Date()
-      vcsTag = '1.0.3-a'
+      vcsTag = ver
     }
   }
 }

@@ -23,7 +23,9 @@ public class APITest {
   
     api.fetchSchool(SCHOOL_ID);
     assertNotNull(api.getSchool());
-    li = api.login(2020, MASHOV_USER, MASHOV_PASSWD);
+    LoginResponse lr = api.login(2020, MASHOV_USER, MASHOV_PASSWD);
+    assertTrue(lr instanceof LoginInfo);
+    li = (LoginInfo) lr;
     // Secret class = private information
     assertNotNull(li);
   }
