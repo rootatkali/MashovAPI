@@ -4,11 +4,12 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ComparisonChain;
 import org.jetbrains.annotations.NotNull;
 
-public class Grade implements Comparable<Grade>{
+public class Grade implements Comparable<Grade> {
   private String studentGuid;
   private int gradingEventId;
   private int grade;
   private String rangeGrade;
+  private String textualGrade;
   private double rate;
   private String timestamp;
   private String teacherName;
@@ -41,6 +42,10 @@ public class Grade implements Comparable<Grade>{
   
   public String getRangeGrade() {
     return rangeGrade;
+  }
+  
+  public String getTextualGrade() {
+    return textualGrade;
   }
   
   public double getRate() {
@@ -97,13 +102,26 @@ public class Grade implements Comparable<Grade>{
   
   @Override
   public String toString() {
-    return MoreObjects.toStringHelper(this).add("studentGuid", studentGuid).add("gradingEventId",
-        gradingEventId).add("grade", grade).add("rangeGrade", rangeGrade).add("rate", rate).add(
-            "timestamp", timestamp).add("teacherName", teacherName).add("groupId", groupId).add(
-                "groupName", groupName).add("subjectName", subjectName).add("eventDate",
-        eventDate).add("id", id).add("gradingPeriod", gradingPeriod).add("gradingEvent",
-        gradingEvent).add("gradeRate", gradeRate).add("gradeTypeId", gradeTypeId).add("gradeType"
-        , gradeType).toString();
+    return MoreObjects.toStringHelper(this)
+        .add("studentGuid", studentGuid)
+        .add("gradingEventId", gradingEventId)
+        .add("grade", grade)
+        .add("rangeGrade", rangeGrade)
+        .add("textualGrade", textualGrade)
+        .add("rate", rate)
+        .add("timestamp", timestamp)
+        .add("teacherName", teacherName)
+        .add("groupId", groupId)
+        .add("groupName", groupName)
+        .add("subjectName", subjectName)
+        .add("eventDate", eventDate)
+        .add("id", id)
+        .add("gradingPeriod", gradingPeriod)
+        .add("gradingEvent", gradingEvent)
+        .add("gradeRate", gradeRate)
+        .add("gradeTypeId", gradeTypeId)
+        .add("gradeType", gradeType)
+        .toString();
   }
   
   @Override

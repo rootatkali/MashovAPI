@@ -31,7 +31,7 @@ public class APITest {
   }
   
   @Test
-  public void loginInfo() throws IOException {
+  public void loginInfo() {
     assertEquals(li.getCredential().getIdNumber(), ID_NUM);
     assertEquals(li.getAccessToken().getSchoolOptions().getMoodleSite(), MOODLE_SITE);
     assertTrue(li.getAccessToken().getUserOptions().hasEmailNotifications());
@@ -42,7 +42,7 @@ public class APITest {
   public void grades() throws IOException {
     Grade[] grades = api.getGrades();
     assertNotNull(grades);
-    Arrays.sort(grades);
+    Arrays.sort(grades); // Sort from lowest grade to highest
     
     assertEquals(100, grades[grades.length - 1].getGrade());
   }
@@ -67,6 +67,13 @@ public class APITest {
   @Test
   public void timetable() throws IOException {
     assertEquals(LESSON_COUNT, api.getTimetable().length);
+  }
+  
+  @Test
+  public void behaves() throws IOException {
+    Behave[] behaves = api.getBehaves();
+    assertTrue(behaves.length > 0);
+    System.out.println(Arrays.toString(behaves));
   }
   
   @After
