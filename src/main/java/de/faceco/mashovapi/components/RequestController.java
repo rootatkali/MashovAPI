@@ -6,7 +6,7 @@ import java.util.*;
 import com.google.gson.Gson;
 import okhttp3.*;
 
-public class RequestController {
+public final class RequestController {
   /**
    * This is the base URL of the Mashov API
    */
@@ -95,7 +95,7 @@ public class RequestController {
    * @return A {@link Response} corresponding to the API server's response.
    * @throws IOException If anything goes wrong.
    */
-  private static Response makeApiRequest(String path) throws IOException {
+  private static Response apiGet(String path) throws IOException {
     Request request = new Request.Builder()
         .url(BASE_URL + path)
         .method("GET", null)
@@ -107,34 +107,27 @@ public class RequestController {
   }
   
   public static Grade[] grades(String uid) throws IOException {
-    Response response = makeApiRequest("/students/" + uid + "/grades");
+    Response response = apiGet("/students/" + uid + "/grades");
     return gson.fromJson(response.body().string(), Grade[].class);
   }
   
   public static Birthday birthday(String uid) throws IOException {
-    Request request = new Request.Builder()
-        .url(BASE_URL + "/user/" + uid + "/birthday")
-        .method("GET", null)
-        .addHeader("User-Agent", USER_AGENT)
-        .addHeader("x-csrf-token", csrfToken)
-        .addHeader("Cookie", cookieHeader())
-        .build();
-    Response response = http.newCall(request).execute();
+    Response response = apiGet("/user/" + uid + "/birthday");
     return gson.fromJson(response.body().string(), Birthday.class);
   }
   
   public static Group[] groups(String uid) throws IOException {
-    Response response = makeApiRequest("/students/" + uid + "/groups");
+    Response response = apiGet("/students/" + uid + "/groups");
     return gson.fromJson(response.body().string(), Group[].class);
   }
   
   public static Period[] bells() throws IOException {
-    Response response = makeApiRequest("/bells");
+    Response response = apiGet("/bells");
     return gson.fromJson(response.body().string(), Period[].class);
   }
   
   public static Lesson[] timetable(String uid) throws IOException {
-    Response response = makeApiRequest("/students/" + uid + "/timetable");
+    Response response = apiGet("/students/" + uid + "/timetable");
     return gson.fromJson(response.body().string(), Lesson[].class);
   }
   
@@ -146,32 +139,91 @@ public class RequestController {
    * @throws IOException In case of an I/O server exception or an unauthorized request.
    */
   public static byte[] picture(String uid) throws IOException {
-    Response response = makeApiRequest("/user/" + uid + "/picture");
+    Response response = apiGet("/user/" + uid + "/picture");
     return response.body().bytes();
   }
   
-  public static Conversation[] inbox(int skip, int take) throws IOException {
-    Response response = makeApiRequest(String.format("/mail/inbox/conversations?skip=%d&take=%d", skip, take));
+  public static Recipient[] recipients() throws IOException {
+    Response response = apiGet("/mail/recipients");
+    return gson.fromJson(response.body().string(), Recipient[].class);
+  }
+  
+  static String msgIdReply(Conversation c) throws IOException {
+    MediaType json = MediaType.parse("application/json");
+    RequestBody body = RequestBody.create(gson.toJson(new SendMessage(c).body("")), json);
+    
+    Request request = new Request.Builder()
+        .url(BASE_URL + "/mail/conversations/" + c.getConversationId() + "/draft")
+        .put(body)
+        .addHeader("User-Agent", USER_AGENT)
+        .addHeader("x-csrf-token", csrfToken)
+        .addHeader("Cookie", cookieHeader())
+        .build();
+    Response response = http.newCall(request).execute();
+    Message msg = gson.fromJson(response.body().string(), Message.class);
+    return msg.getMessageId();
+  }
+  
+  static Message msgNew() throws IOException {
+    String blankMsg = "{\"isNew\":true,\"isDeleted\":false,\"body\":\"\"}";
+    MediaType json = MediaType.parse("application/json");
+    RequestBody body = RequestBody.create(blankMsg, json);
+    
+    Request request = new Request.Builder()
+        .url(BASE_URL + "/mail/conversations/draft")
+        .put(body)
+        .addHeader("User-Agent", USER_AGENT)
+        .addHeader("x-csrf-token", csrfToken)
+        .addHeader("Cookie", cookieHeader())
+        .build();
+    Response response = http.newCall(request).execute();
+    return gson.fromJson(response.body().string(), Message.class);
+  }
+  
+  public static Message send(SendMessage s) throws IOException {
+    String msg = gson.toJson(s);
+  
+    MediaType json = MediaType.parse("application/json");
+    RequestBody body = RequestBody.create(msg, json);
+    
+    Request request = new Request.Builder()
+        .url(BASE_URL + "/mail/messages/" + s.getMessageId())
+        .post(body)
+        .addHeader("User-Agent", USER_AGENT)
+        .addHeader("x-csrf-token", csrfToken)
+        .addHeader("Cookie", cookieHeader())
+        .build();
+    Response response = http.newCall(request).execute();
+    return gson.fromJson(response.body().string(), Message.class);
+  }
+  
+  public static Conversation[] inbox() throws IOException {
+    Response response = apiGet("/mail/inbox/conversations");
+    return gson.fromJson(response.body().string(), Conversation[].class);
+  }
+  
+  public static Conversation[] unread() throws IOException {
+    Response response = apiGet("/mail/unread/conversations");
     return gson.fromJson(response.body().string(), Conversation[].class);
   }
   
   public static Conversation singleCon(String cid) throws IOException {
-    Response response = makeApiRequest("/mail/conversations/" + cid);
+    Response response = apiGet("/mail/conversations/" + cid);
     return gson.fromJson(response.body().string(), Conversation.class);
   }
   
   public static Contact[] classContacts(String uid) throws IOException {
-    Response response = makeApiRequest("/students/" + uid + "/alfon");
+    Response response = apiGet("/students/" + uid + "/alfon");
     return gson.fromJson(response.body().string(), Contact[].class);
   }
   
   public static Contact[] groupContacts(int guid) throws IOException {
-    Response response = makeApiRequest("/groups/" + guid + "/alfon");
+    Response response = apiGet("/groups/" + guid + "/alfon");
     return gson.fromJson(response.body().string(), Contact[].class);
   }
   
   public static Behave[] behaves(String uid) throws IOException {
-    Response response = makeApiRequest("/students/" + uid + "/behave");
+    Response response = apiGet("/students/" + uid + "/behave");
     return gson.fromJson(response.body().string(), Behave[].class);
   }
   
@@ -182,7 +234,7 @@ public class RequestController {
    * @throws IOException In case of an I/O exception.
    */
   public static int logout() throws IOException {
-    Response response = makeApiRequest("/logout");
+    Response response = apiGet("/logout");
     return response.code();
   }
   

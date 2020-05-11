@@ -3,7 +3,7 @@ package de.faceco.mashovapi.components;
 /**
  * This class detonates a failed login request.
  */
-public class LoginFailed implements LoginResponse {
+public final class LoginFailed implements LoginResponse {
   private String message;
   private transient int errorCode;
   

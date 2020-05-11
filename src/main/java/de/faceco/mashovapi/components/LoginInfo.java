@@ -4,9 +4,9 @@ import com.google.common.base.MoreObjects;
 import de.faceco.mashovapi.components.logininfo.*;
 
 /**
- * This class detonates a successful login request
+ * This class detonates a successful login request.
  */
-public class LoginInfo implements LoginResponse {
+public final class LoginInfo implements LoginResponse {
   private String sessionId;
   private Credential credential;
   private AccessToken accessToken;

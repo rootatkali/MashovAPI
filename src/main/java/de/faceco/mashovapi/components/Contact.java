@@ -3,9 +3,19 @@ package de.faceco.mashovapi.components;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.collect.ComparisonChain;
+import de.faceco.mashovapi.API;
 import org.jetbrains.annotations.NotNull;
 
-public class Contact implements Comparable<Contact> {
+/**
+ * A data type for a contact in a contact list.
+ *
+ * The natural order of Contacts is alphabetical: familyName -> privateName -> city
+ *
+ * @see API#getClassMembers()
+ * @see API#getGroupMembers(Group)
+ * @see API#getGroupMembers(int)
+ */
+public final class Contact implements Comparable<Contact> {
   private String studentGuid;
   private String familyName;
   private String privateName;
