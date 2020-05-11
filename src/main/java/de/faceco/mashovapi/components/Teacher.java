@@ -3,7 +3,10 @@ package de.faceco.mashovapi.components;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 
-public class Teacher {
+/**
+ * An element representing a teacher, can be seen inside {@link Group} elements.
+ */
+public final class Teacher {
   private String teacherGuid;
   private String teacherName;
   

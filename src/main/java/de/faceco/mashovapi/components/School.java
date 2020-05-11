@@ -11,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Represents a school registered in the Mashov system.
  */
-public class School implements Comparable<School> {
+public final class School implements Comparable<School> {
   /**
    * The school symbol as designated by the Ministry of Education.
    * Example: HaKfar HaYarok = 580019

@@ -2,7 +2,10 @@ package de.faceco.mashovapi.components;
 
 import com.google.common.base.MoreObjects;
 
-public class Login {
+/**
+ * The body of a login request. Used with {@link de.faceco.mashovapi.API#login(int, String, String)}
+ */
+public final class Login {
   private String username;
   private School school;
   private int year;

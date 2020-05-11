@@ -1,5 +1,6 @@
 # MashovAPI
-An open-source API for the Israeli Mashov school management system, written in Java. This is a replacement for the [API written in Kotlin](https://gitlab.com/yoavst/mashov-api/).
+An open-source API for the Israeli Mashov school management system, written in Java.
+This API is WIP.
 
 ## Installation
 Installations for gradle:
@@ -7,15 +8,13 @@ Installations for gradle:
 // ...
 repositories {
   // ...
-  maven {
-    url 'https://dl.bintray.com/rootatkali/facecode'
-  }
+  jcenter() // Use the main jcenter repository.
 }
 
 // ...
 
 dependencies {
-  implementation 'de.faceco:MashovAPI:1.0.5-android' // For the latest version, also works in JDK environments
+  implementation 'de.faceco:MashovAPI:1.0.7-android' // For the latest version, also works in JDK environments
 }
 ```
 

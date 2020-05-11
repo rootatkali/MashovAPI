@@ -3,6 +3,8 @@ package de.faceco.mashovapi;
 import java.io.IOException;
 import java.util.Arrays;
 
+import com.google.gson.Gson;
+import org.jetbrains.annotations.TestOnly;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,6 +33,19 @@ public class APITest {
   }
   
   @Test
+  public void recipients() throws IOException {
+    System.out.println(Arrays.toString(api.getMailRecipients()));
+  }
+  
+  @Test
+  public void sendMessageReply() throws IOException {
+    Conversation c = api.getInbox()[0];
+    System.out.println(c);
+    SendMessage msg = SendMessage.from(c);
+    System.out.println(msg);
+  }
+  
+  @Test
   public void loginInfo() {
     assertEquals(li.getCredential().getIdNumber(), ID_NUM);
     assertEquals(li.getAccessToken().getSchoolOptions().getMoodleSite(), MOODLE_SITE);
@@ -44,7 +59,7 @@ public class APITest {
     assertNotNull(grades);
     Arrays.sort(grades); // Sort from lowest grade to highest
     
-    assertEquals(100, grades[grades.length - 1].getGrade());
+    assertEquals(100, grades[grades.length - 1].getGrade().intValue());
   }
   
   @Test
@@ -74,6 +89,12 @@ public class APITest {
     Behave[] behaves = api.getBehaves();
     assertTrue(behaves.length > 0);
     System.out.println(Arrays.toString(behaves));
+  }
+  
+  @Test
+  public void inbox() throws IOException {
+    Conversation[] c = api.getInbox();
+    System.out.println(c[0].getMessages()[0].getBody());
   }
   
   @After

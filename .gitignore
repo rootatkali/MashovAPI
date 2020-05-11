@@ -4,10 +4,10 @@
 /build/classes/java/main/
 /build/classes/java/test/
 
-# Compiled class file
+# Compiled class attachment
 *.class
 
-# Log file
+# Log attachment
 *.log
 
 # BlueJ files
@@ -31,7 +31,7 @@ hs_err_pid*
 # Ignore Gradle GUI config
 gradle-app.setting
 
-# Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
+# Avoid ignoring Gradle wrapper jar attachment (.jar files are usually ignored)
 !gradle-wrapper.jar
 
 # Cache of project
@@ -43,3 +43,6 @@ picture.jpg
 # Used in all places where private information is required for testing purposes.
 /**/Secret.java
 /gradle.properties
+/api.png
+/API.svg
+/API.uml

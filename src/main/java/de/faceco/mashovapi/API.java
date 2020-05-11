@@ -4,17 +4,34 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.Objects;
 
 import de.faceco.mashovapi.components.*;
 
 /**
- * The main class of the MashovAPI library. All requests to the Mashov servers should be
+ * The main class of the MashovAPI library. All requests to the Mashov servers should be handled from here, and not from
+ * {@link RequestController}. The only exception is the {@link SendMessage} class.
+ *
+ * <p>The API can be initialized or called from the following code:</p>
+ * <pre>
+ * API api = API.getInstance();
+ * </pre>
+ * <p>After initializing the API, you should set the API school, using either of the following methods:</p>
+ * <pre>
+ *   School[] schools = api.allSchools();
+ *   api.setSchool(...);
+ *
+ *   // OR
+ *
+ *   int schoolId;
+ *   //...
+ *   api.fetchSchool(schoolId);
+ * </pre>
  */
-public class API {
+public final class API {
   private School school;
   private String uid; // Unique User ID gave by the Mashov interface
   
-  private int mailPage;
   
   private static API singleton;
   
@@ -32,7 +49,7 @@ public class API {
   }
   
   private API() {
-    mailPage = 20;
+  
   }
   
   /**
@@ -56,22 +73,6 @@ public class API {
    */
   public void eraseSchool() {
     school = null;
-  }
-  
-  /**
-   * @return The amount of mail conversations per page.
-   */
-  public int getMailPage() {
-    return mailPage;
-  }
-  
-  /**
-   * Sets the amount of mail conversations per page.
-   *
-   * @param mailPage The amount of mail per page.
-   */
-  public void setMailPage(int mailPage) {
-    this.mailPage = mailPage;
   }
   
   /**
@@ -127,6 +128,10 @@ public class API {
       this.uid = li.getCredential().getUserId();
     }
     return lr;
+  }
+  
+  public String getStudentId() {
+    return uid;
   }
   
   /**
@@ -221,25 +226,67 @@ public class API {
   }
   
   /**
+   * Attempts to complete the missing info about Conversations: recipients and message body.
+   * @param c An array of Conversations.
+   * @throws IOException If there was an error.
+   */
+  private void completeConversations(Conversation[] c) throws IOException {
+    Objects.requireNonNull(c);
+    for (int i = 0; i < c.length; i++) {
+      c[i] = RequestController.singleCon(c[i].getConversationId());
+    }
+  }
+  
+  public Recipient[] getMailRecipients() throws IOException {
+    return RequestController.recipients();
+  }
+  
+  /**
+   * Attempts to fetch the first page of the user's inbox.
+   *
+   * @return An array of Conversations.
+   * @throws IOException In case of an I/O error.
+   * @see #getInbox(int)
+   */
+  public Conversation[] getInbox() throws IOException {
+    Conversation[] inbox = RequestController.inbox();
+    completeConversations(inbox);
+    return inbox;
+  }
+  
+  /**
    * Attempts to fetch the nth page of the user's inbox.
    *
-   * @param page The page in the inbox. First page is 0, and each page contains 20 conversations
-   *             (configurable through {@link #setMailPage(int)}.)
-   * @return An array of Conversations, with no message bodies or lists of recipients.
+   * @param page The page in the inbox. First page is 0, and each page contains 20 conversations.
+   * @return An array of Conversations.
    * @throws IOException In case of an I/O error.
-   * @see #getMessages(Conversation)
+   * @deprecated Now returns all conversations. Use {@link #getInbox()} instead.
    */
+  @Deprecated
   public Conversation[] getInbox(int page) throws IOException {
-    return RequestController.inbox(20 * page, page);
+    Conversation[] inbox = RequestController.inbox();
+    completeConversations(inbox);
+    return inbox;
+  }
+  
+  public Conversation[] getUnreadMail() throws IOException {
+    return RequestController.unread();
+  }
+  
+  @Deprecated
+  public Conversation[] getUnreadMail(int page) throws IOException {
+    return RequestController.unread();
   }
   
   /**
    * Attempts to fetch the missing details about a Conversation - messages and recipients.
    *
+   * @deprecated Feature incorporated into {@link #getInbox(int)}
    * @param c The Conversation to look in.
    * @return A Conversation element with all the required detailed.
    * @throws IOException In case of an I/O error.
    */
+  @Deprecated
   public Conversation getMessages(Conversation c) throws IOException {
     return RequestController.singleCon(c.getConversationId());
   }

@@ -2,9 +2,17 @@ package de.faceco.mashovapi.components;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ComparisonChain;
+import de.faceco.mashovapi.API;
 import org.jetbrains.annotations.NotNull;
 
-public class Group implements Comparable<Group> {
+/**
+ * Container for a student group. Natural order is by name, then by ID.
+ *
+ * <p>Contains an array of {@link Teacher}s.
+ *
+ * @see API#getGroups()
+ */
+public final class Group implements Comparable<Group> {
   private String groupLevel;
   private int groupId;
   private String groupName;
