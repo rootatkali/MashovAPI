@@ -12,24 +12,21 @@ import org.jetbrains.annotations.NotNull;
  * Represents a school registered in the Mashov system.
  */
 public final class School implements Comparable<School> {
-  /**
-   * The school symbol as designated by the Ministry of Education.
-   * Example: HaKfar HaYarok = 580019
-   */
   private int semel;
   private String name;
   private int[] years;
-  
-  @Expose(deserialize = false)
-  private boolean top;
   
   /**
    * Zero-argument constructor, for internal Gson use.
    */
   School() {
-    top = true;
+  
   }
   
+  /**
+   * Returns the school symbol as designated by the Ministry of Education.
+   * Example: HaKfar HaYarok = 580019
+   */
   public int getId() {
     return semel;
   }

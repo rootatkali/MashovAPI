@@ -5,7 +5,7 @@ plugins {
   id "com.jfrog.bintray" version "1.8.4"
 }
 
-def ver = '1.0.7-android'
+def ver = '1.0.8-android'
 
 group 'de.faceco'
 version ver

@@ -14,7 +14,7 @@ repositories {
 // ...
 
 dependencies {
-  implementation 'de.faceco:MashovAPI:1.0.7-android' // For the latest version, also works in JDK environments
+  implementation 'de.faceco:MashovAPI:1.0.8-android' // For the latest version, also works in JDK environments
 }
 ```
 

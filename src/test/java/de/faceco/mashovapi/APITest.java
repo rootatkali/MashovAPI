@@ -39,10 +39,11 @@ public class APITest {
   
   @Test
   public void sendMessageReply() throws IOException {
-    Conversation c = api.getInbox()[0];
-    System.out.println(c);
-    SendMessage msg = SendMessage.from(c);
-    System.out.println(msg);
+//    Conversation c = api.getInbox()[0];
+//    System.out.println(c);
+//    SendMessage msg = SendMessage.from(c)
+//        .body("<p>aaaaaaa</p>");
+//    System.out.println(new Gson().toJson(msg));
   }
   
   @Test
@@ -81,7 +82,7 @@ public class APITest {
   
   @Test
   public void timetable() throws IOException {
-    assertEquals(LESSON_COUNT, api.getTimetable().length);
+    assertTrue(api.getTimetable().length > 0);
   }
   
   @Test
@@ -94,6 +95,7 @@ public class APITest {
   @Test
   public void inbox() throws IOException {
     Conversation[] c = api.getInbox();
+    System.out.println(c.length);
     System.out.println(c[0].getMessages()[0].getBody());
   }
   
