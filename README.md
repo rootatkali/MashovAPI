@@ -14,7 +14,7 @@ repositories {
 // ...
 
 dependencies {
-  implementation 'de.faceco:MashovAPI:1.0.8-android' // For the latest version, also works in JDK environments
+  implementation 'de.faceco:MashovAPI:1.0.9-android' // For the latest version, also works in JDK environments
 }
 ```
 
@@ -33,7 +33,7 @@ int schoolId = 580019;
 api.fetchSchool(schoolId);
 
 // All the schools
-School[] all = api.allSchools();
+School[] all = api.getAllSchools();
 ```
 
 After selecting a school, you need to log in:
