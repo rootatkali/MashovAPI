@@ -1,13 +1,14 @@
 package de.faceco.mashovapi.components;
 
 import com.google.common.base.MoreObjects;
-import com.google.gson.Gson;
 import de.faceco.mashovapi.API;
 
+import java.io.File;
 import java.io.IOException;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -23,6 +24,7 @@ import java.util.Objects;
  *       .cc(rec[1], rec[2])
  *       .subject("Test message")
  *       .body("&lt;p&gt;Html content&lt;/p&gt;")
+ *       .attachAll("/path/to/file1", "/path/to/file2")
  *       .send();
  * </pre>
  *
@@ -35,7 +37,7 @@ import java.util.Objects;
  * </pre>
  */
 public final class SendMessage {
-  private transient boolean fromConv;
+  private transient boolean reply;
   
   private String messageId;
   private final String conversationId;
@@ -46,6 +48,7 @@ public final class SendMessage {
   private Recipient[] recipients;
   private Recipient[] cc;
   private Recipient[] bcc;
+  private Attachment[] files;
   private int folder;
   private boolean isNew;
   private boolean isDeleted;
@@ -59,7 +62,7 @@ public final class SendMessage {
     this.messageId = messageId;
     this.conversationId = conversationId;
     this.senderId = API.getInstance().getStudentId();
-    fromConv = false;
+    reply = false;
     sendOnBehalf = false;
     sendViaEmail = false;
     isDeleted = false;
@@ -75,15 +78,15 @@ public final class SendMessage {
    */
   SendMessage(Conversation c) throws IOException {
     this(null, c.getConversationId());
-    fromConv = true;
+    reply = true;
     isNew = true;
     subject = c.getSubject();
     body = c.getMessages()[c.getMessages().length - 1].getBody();
-  
+    
     Recipient[] recipients = API.getInstance().getMailRecipients();
     String senderId = c.getMessages()[0].getSenderId();
     Recipient og = null;
-  
+    
     for (Recipient r : recipients) {
       if (r.getValue().equals(senderId)) {
         og = r;
@@ -91,12 +94,13 @@ public final class SendMessage {
       }
     }
     if (og == null) throw new NullPointerException();
-  
+    
     this.recipients = new Recipient[]{og};
   }
   
   /**
    * Creates a new SendMessage instance from an existing conversation - a reply.
+   *
    * @param c The conversation to reply to.
    * @return The created SendMessage object.
    * @throws IOException If the Mashov server is inaccessible.
@@ -110,6 +114,7 @@ public final class SendMessage {
   
   /**
    * Creates a new SendMessage instance using a new conversation.
+   *
    * @return The created SendMessage instance.
    * @throws IOException If an error occurs.
    */
@@ -122,11 +127,12 @@ public final class SendMessage {
   
   /**
    * Sets the subject of the message to be sent. Use only on non-reply SendMessages.
+   *
    * @param subject The subject to set.
    * @return The SendMessage instance.
    */
   public SendMessage subject(String subject) {
-    if (fromConv) throw new RuntimeException();
+    if (reply) throw new RuntimeException();
     if (this.subject != null && !this.subject.isEmpty()) throw new RuntimeException("Subject already set.");
     Objects.requireNonNull(subject);
     this.subject = subject;
@@ -135,6 +141,7 @@ public final class SendMessage {
   
   /**
    * Sets the content of the response. If this is a reply, the contents of the ast message will be in a blockquote.
+   *
    * @param body The message body, in proper HTML formatting.
    * @return This.
    */
@@ -150,11 +157,12 @@ public final class SendMessage {
   
   /**
    * Set the recipients of the message. Do not use on reply messages.
+   *
    * @param recipients The recipients to choose.
    * @return This.
    */
   public SendMessage to(Recipient... recipients) {
-    if (fromConv) throw new RuntimeException();
+    if (reply) throw new RuntimeException();
     if (recipients == null || recipients.length == 0) throw new NullPointerException();
     this.recipients = recipients;
     return this;
@@ -162,11 +170,12 @@ public final class SendMessage {
   
   /**
    * Select the CC recipients (Carbon Copy). Do not use on reply messages.
+   *
    * @param recipients An array of recipients.
    * @return This.
    */
   public SendMessage cc(Recipient... recipients) {
-    if (fromConv) throw new RuntimeException();
+    if (reply) throw new RuntimeException();
     if (recipients == null || recipients.length == 0) throw new NullPointerException();
     this.cc = recipients;
     return this;
@@ -174,18 +183,79 @@ public final class SendMessage {
   
   /**
    * Select the BCC recipients (Black Carbon Copy). Do not use on reply messages.
+   *
    * @param recipients An array of recipients.
    * @return This.
    */
   public SendMessage bcc(Recipient... recipients) {
-    if (fromConv) throw new RuntimeException();
+    if (reply) throw new RuntimeException();
     if (recipients == null || recipients.length == 0) throw new NullPointerException();
     this.bcc = recipients;
     return this;
   }
   
   /**
+   * Attempts to upload a file to attach. If it does not succeed, it will return this object without any changes.
+   *
+   * @param file The file to upload
+   * @return This.
+   */
+  public SendMessage attach(File file) throws IOException {
+    List<Attachment> list;
+    if (files != null) {
+      list = new ArrayList<>(Arrays.asList(files));
+    } else {
+      list = new ArrayList<>();
+    }
+    
+    Attachment attach = RequestController.file(this, file);
+    list.add(attach);
+    
+    files = list.toArray(new Attachment[0]);
+    return this;
+  }
+  
+  /**
+   * Attempts to attach a file. If it does not succeed, it will return this object without any changes.
+   *
+   * @param path The path to the file to upload.
+   * @return This.
+   */
+  public SendMessage attach(String path) throws IOException {
+    return attach(new File(path));
+  }
+  
+  /**
+   * Attempts to attach multiple files to the message.
+   *
+   * @param paths Paths to files to upload
+   * @return This.
+   */
+  public SendMessage attachAll(String... paths) throws IOException {
+    for (String path : paths) {
+      attach(path);
+    }
+    
+    return this;
+  }
+  
+  /**
+   * Attempts to attach multiple files to the message.
+   *
+   * @param files All files to upload
+   * @return This.
+   */
+  public SendMessage attachAll(File... files) throws IOException {
+    for (File file : files) {
+      attach(file);
+    }
+    
+    return this;
+  }
+  
+  /**
    * Attempts to send the message. Use only after setting (recipients, a subject and) a body.
+   *
    * @return The callback message from the Mashov web servers.
    * @throws IOException If the message could not be sent.
    */
@@ -209,6 +279,7 @@ public final class SendMessage {
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(this)
+        .add("fromConv", reply)
         .add("messageId", messageId)
         .add("conversationId", conversationId)
         .add("senderId", senderId)
@@ -218,6 +289,7 @@ public final class SendMessage {
         .add("recipients", recipients)
         .add("cc", cc)
         .add("bcc", bcc)
+        .add("files", files)
         .add("folder", folder)
         .add("isNew", isNew)
         .add("isDeleted", isDeleted)

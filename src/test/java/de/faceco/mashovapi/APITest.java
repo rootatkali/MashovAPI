@@ -1,7 +1,10 @@
 package de.faceco.mashovapi;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import com.google.gson.Gson;
 import org.jetbrains.annotations.TestOnly;
@@ -47,6 +50,28 @@ public class APITest {
   }
   
   @Test
+  public void gradesNull() throws IOException {
+    Grade[] grades = api.getGrades();
+    List<Grade> nulls = new ArrayList<>();
+    for (Grade g : grades) {
+      if (g.getGrade() == null) {
+        nulls.add(g);
+      }
+    }
+    assertTrue(nulls.size() > 0);
+    System.out.println(nulls);
+  }
+  
+  @Test
+  public void upload() throws IOException {
+    File f = new File("/home/rotem/Documents/out.pdf");
+    SendMessage test = SendMessage.asNew()
+        .attach(f)
+        .attach("/home/rotem/bitmap.png");
+    System.out.println(test);
+  }
+  
+  @Test
   public void loginInfo() {
     assertEquals(li.getCredential().getIdNumber(), ID_NUM);
     assertEquals(li.getAccessToken().getSchoolOptions().getMoodleSite(), MOODLE_SITE);
@@ -71,13 +96,6 @@ public class APITest {
   @Test
   public void birthday() throws IOException {
     assertEquals(BDAY_YEAR, api.getBirthday().getYear());
-  }
-  
-  @Test
-  public void classMembers() throws IOException {
-    Contact[] classMembers = api.getClassMembers();
-    Arrays.sort(classMembers);
-    assertEquals(FIRST_CLASSMATE, classMembers[0].getFamilyName());
   }
   
   @Test

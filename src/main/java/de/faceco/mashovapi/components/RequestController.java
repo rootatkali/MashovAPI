@@ -1,10 +1,13 @@
 package de.faceco.mashovapi.components;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.*;
 
 import com.google.gson.Gson;
 import okhttp3.*;
+import org.apache.tika.Tika;
 
 public final class RequestController {
   /**
@@ -14,7 +17,9 @@ public final class RequestController {
   private static final String USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) " +
       "Chrome/81.0.4044.122 Safari/537.36";
   private static Gson gson = new Gson();
-  private static OkHttpClient http = new OkHttpClient().newBuilder().build();
+  private static OkHttpClient http
+      = new OkHttpClient.Builder()
+      .build();
   private static String csrfToken = null;
   private static final Map<String, String> cookies = new HashMap<>();
   
@@ -212,19 +217,38 @@ public final class RequestController {
     return gson.fromJson(response.body().string(), Conversation.class);
   }
   
-  public static Contact[] classContacts(String uid) throws IOException {
-    Response response = apiGet("/students/" + uid + "/alfon");
-    return gson.fromJson(response.body().string(), Contact[].class);
-  }
-  
-  public static Contact[] groupContacts(int guid) throws IOException {
-    Response response = apiGet("/groups/" + guid + "/alfon");
-    return gson.fromJson(response.body().string(), Contact[].class);
-  }
-  
   public static Behave[] behaves(String uid) throws IOException {
     Response response = apiGet("/students/" + uid + "/behave");
     return gson.fromJson(response.body().string(), Behave[].class);
+  }
+  
+  public static Attachment file(SendMessage msg, File file) throws IOException {
+    if (!file.exists()) throw new IOException("File does not exist.");
+    if (!file.isFile()) throw new IOException("Please select a file.");
+    
+    String mime = new Tika().detect(file); // Detect MIME type from file using Apache Tika
+    MediaType mediaType = MediaType.parse(mime);
+    
+    RequestBody body = new MultipartBody.Builder()
+        .setType(MultipartBody.FORM)
+        .addFormDataPart("fileUpload", file.getName(), RequestBody.create(file, mediaType))
+        .build();
+    
+    Request request = new Request.Builder()
+        .url(BASE_URL + "/mail/messages/" + msg.getMessageId() + "/files")
+        .post(body)
+        .addHeader("User-Agent", USER_AGENT)
+        .addHeader("x-csrf-token", csrfToken)
+        .addHeader("Cookie", cookieHeader())
+        .build();
+    
+    Response response = http.newCall(request).execute();
+    
+    return gson.fromJson(response.body().string(), Attachment[].class)[0];
+  }
+  
+  public static Attachment file(SendMessage msg, String path) throws IOException {
+    return file(msg, new File(path));
   }
   
   /**
