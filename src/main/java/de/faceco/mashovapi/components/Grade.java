@@ -5,6 +5,8 @@ import com.google.common.collect.ComparisonChain;
 import de.faceco.mashovapi.API;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Objects;
+
 /**
  * A container representing a grading event, which may or may not have a numerical grade. The natural order of Grade
  * elements (as specified by {@link #compareTo(Grade)} is numGrade -> textualGrade.
@@ -14,7 +16,7 @@ import org.jetbrains.annotations.NotNull;
 public final class Grade implements Comparable<Grade> {
   private String studentGuid;
   private int gradingEventId;
-  private int grade;
+  private Integer grade;
   private String rangeGrade;
   private String textualGrade;
   private double rate;
@@ -133,8 +135,6 @@ public final class Grade implements Comparable<Grade> {
   
   @Override
   public int compareTo(Grade g) {
-    if (textualGrade == null) return Integer.compare(grade, g.grade);
-    
     return ComparisonChain.start()
         .compare(grade, g.grade)
         .compare(textualGrade, g.textualGrade)
@@ -146,52 +146,52 @@ public final class Grade implements Comparable<Grade> {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     
-    Grade g = (Grade) o;
+    Grade grade1 = (Grade) o;
     
-    if (gradingEventId != g.gradingEventId) return false;
-    if (Double.compare(g.rate, rate) != 0) return false;
-    if (groupId != g.groupId) return false;
-    if (id != g.id) return false;
-    if (gradingPeriod != g.gradingPeriod) return false;
-    if (Double.compare(g.gradeRate, gradeRate) != 0) return false;
-    if (gradeTypeId != g.gradeTypeId) return false;
-    if (!studentGuid.equals(g.studentGuid)) return false;
-    if (grade != g.grade) return false;
-    if (!rangeGrade.equals(g.rangeGrade)) return false;
-    if (!textualGrade.equals(g.textualGrade)) return false;
-    if (!timestamp.equals(g.timestamp)) return false;
-    if (!teacherName.equals(g.teacherName)) return false;
-    if (!groupName.equals(g.groupName)) return false;
-    if (!subjectName.equals(g.subjectName)) return false;
-    if (!eventDate.equals(g.eventDate)) return false;
-    if (!gradingEvent.equals(g.gradingEvent)) return false;
-    return gradeType.equals(g.gradeType);
+    if (gradingEventId != grade1.gradingEventId) return false;
+    if (Double.compare(grade1.rate, rate) != 0) return false;
+    if (groupId != grade1.groupId) return false;
+    if (id != grade1.id) return false;
+    if (gradingPeriod != grade1.gradingPeriod) return false;
+    if (Double.compare(grade1.gradeRate, gradeRate) != 0) return false;
+    if (gradeTypeId != grade1.gradeTypeId) return false;
+    if (!Objects.equals(studentGuid, grade1.studentGuid)) return false;
+    if (!Objects.equals(grade, grade1.grade)) return false;
+    if (!Objects.equals(rangeGrade, grade1.rangeGrade)) return false;
+    if (!Objects.equals(textualGrade, grade1.textualGrade)) return false;
+    if (!Objects.equals(timestamp, grade1.timestamp)) return false;
+    if (!Objects.equals(teacherName, grade1.teacherName)) return false;
+    if (!Objects.equals(groupName, grade1.groupName)) return false;
+    if (!Objects.equals(subjectName, grade1.subjectName)) return false;
+    if (!Objects.equals(eventDate, grade1.eventDate)) return false;
+    if (!Objects.equals(gradingEvent, grade1.gradingEvent)) return false;
+    return Objects.equals(gradeType, grade1.gradeType);
   }
   
   @Override
   public int hashCode() {
     int result;
     long temp;
-    result = studentGuid.hashCode();
+    result = studentGuid != null ? studentGuid.hashCode() : 0;
     result = 31 * result + gradingEventId;
-    result = 31 * result + grade;
-    result = 31 * result + rangeGrade.hashCode();
-    result = 31 * result + textualGrade.hashCode();
+    result = 31 * result + (grade != null ? grade.hashCode() : 0);
+    result = 31 * result + (rangeGrade != null ? rangeGrade.hashCode() : 0);
+    result = 31 * result + (textualGrade != null ? textualGrade.hashCode() : 0);
     temp = Double.doubleToLongBits(rate);
     result = 31 * result + (int) (temp ^ (temp >>> 32));
-    result = 31 * result + timestamp.hashCode();
-    result = 31 * result + teacherName.hashCode();
+    result = 31 * result + (timestamp != null ? timestamp.hashCode() : 0);
+    result = 31 * result + (teacherName != null ? teacherName.hashCode() : 0);
     result = 31 * result + groupId;
-    result = 31 * result + groupName.hashCode();
-    result = 31 * result + subjectName.hashCode();
-    result = 31 * result + eventDate.hashCode();
+    result = 31 * result + (groupName != null ? groupName.hashCode() : 0);
+    result = 31 * result + (subjectName != null ? subjectName.hashCode() : 0);
+    result = 31 * result + (eventDate != null ? eventDate.hashCode() : 0);
     result = 31 * result + id;
     result = 31 * result + gradingPeriod;
-    result = 31 * result + gradingEvent.hashCode();
+    result = 31 * result + (gradingEvent != null ? gradingEvent.hashCode() : 0);
     temp = Double.doubleToLongBits(gradeRate);
     result = 31 * result + (int) (temp ^ (temp >>> 32));
     result = 31 * result + gradeTypeId;
-    result = 31 * result + gradeType.hashCode();
+    result = 31 * result + (gradeType != null ? gradeType.hashCode() : 0);
     return result;
   }
 }

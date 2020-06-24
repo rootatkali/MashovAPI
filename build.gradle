@@ -5,7 +5,7 @@ plugins {
   id "com.jfrog.bintray" version "1.8.4"
 }
 
-def ver = '1.0.8-android'
+def ver = '1.0.9-android'
 
 group 'de.faceco'
 version ver
@@ -24,6 +24,7 @@ dependencies {
   implementation 'com.google.code.gson:gson:2.8.6'
   implementation 'com.google.guava:guava:29.0-android'
   implementation 'com.squareup.okhttp3:okhttp:4.5.0'
+  implementation 'org.apache.tika:tika-core:1.24.1'
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {

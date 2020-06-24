@@ -86,7 +86,7 @@ public final class API {
    * @throws IllegalArgumentException If the school is not found in the database.
    */
   public School fetchSchool(int id) throws IOException, IllegalArgumentException {
-    School[] schools = allSchools();
+    School[] schools = getAllSchools();
     
     for (School s : schools) {
       if (s.getId() == id) {
@@ -102,8 +102,20 @@ public final class API {
    *
    * @return A sorted array containing all of the schools.
    * @throws IOException If an error occurs.
+   * @deprecated Use {@link #getAllSchools()} instead
    */
+  @Deprecated
   public School[] allSchools() throws IOException {
+    return getAllSchools();
+  }
+  
+  /**
+   * Tries to fetch the list of the entire school list.
+   *
+   * @return A sorted array containing all of the schools.
+   * @throws IOException If an error occurs.
+   */
+  public School[] getAllSchools() throws IOException {
     School[] schools = RequestController.schools();
     Arrays.sort(schools);
     return schools;
@@ -155,6 +167,20 @@ public final class API {
   }
   
   /**
+   * Generates a download URL for a mail attachment.
+   * @param a The attachment to download.
+   * @return A string representing a URL.
+   */
+  public String generateAttachmentDownloadLink(Attachment a) {
+    return RequestController.BASE_URL +
+        "/mail/messages/" +
+        a.getOwnerGroup() +
+        "/files/" +
+        a.getFileId() +
+        "/download/";
+  }
+  
+  /**
    * Attempts to fetch a list of all the groups a user belongs to. A Group is a group of students learning the same
    * subject together.
    *
@@ -163,40 +189,6 @@ public final class API {
    */
   public Group[] getGroups() throws IOException {
     return RequestController.groups(uid);
-  }
-  
-  /**
-   * Attempts to fetch the student's class members.
-   *
-   * @return An array of Contact objects.
-   * @throws IOException If someone at the Mashov HQ made a mistake.
-   */
-  public Contact[] getClassMembers() throws IOException {
-    return RequestController.classContacts(uid);
-  }
-  
-  /**
-   * Attempts to fetch the students in a group.
-   *
-   * @param g The group to look in.
-   * @return An array of Contact objects.
-   * @throws IOException If the servers won't cooperate.
-   * @see #getGroupMembers(int)
-   */
-  public Contact[] getGroupMembers(Group g) throws IOException {
-    return getGroupMembers(g.getGroupId());
-  }
-  
-  /**
-   * Attempts to fetch the students in a group.
-   *
-   * @param guid The ID of the group to look in.
-   * @return An array of Contact objects.
-   * @throws IOException If the HTTP gods aren't in your favor.
-   * @see #getGroupMembers(Group)
-   */
-  public Contact[] getGroupMembers(int guid) throws IOException {
-    return RequestController.groupContacts(guid);
   }
   
   /**

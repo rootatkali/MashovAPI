@@ -56,7 +56,7 @@ public final class Login {
    *
    * <p><b>CAUTION:</b> May not work as expected in summer months.</p>
    *
-   * @param school   The user's school, from {@link API#allSchools()} or {@link API#fetchSchool(int) API#fetchSchool()}
+   * @param school   The user's school, from {@link API#getAllSchools()} or {@link API#fetchSchool(int) API#fetchSchool()}
    * @param username The student's username.
    * @param password The student's password.
    */
