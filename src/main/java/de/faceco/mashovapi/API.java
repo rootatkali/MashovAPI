@@ -1,12 +1,12 @@
 package de.faceco.mashovapi;
 
+import de.faceco.mashovapi.components.*;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Objects;
-
-import de.faceco.mashovapi.components.*;
 
 /**
  * The main class of the MashovAPI library. All requests to the Mashov servers should be handled from here, and not from
@@ -154,6 +154,14 @@ public final class API {
    */
   public Grade[] getGrades() throws IOException {
     return RequestController.grades(uid);
+  }
+  
+  public BagrutGrade[] getBagrutGrades() throws IOException {
+    return RequestController.bagrutGrades(uid);
+  }
+  
+  public BagrutTime[] getBagrutTimes() throws IOException {
+    return RequestController.bagrutTimes(uid);
   }
   
   /**

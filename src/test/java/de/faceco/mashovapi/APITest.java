@@ -1,22 +1,19 @@
 package de.faceco.mashovapi;
 
+import de.faceco.mashovapi.components.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.google.gson.Gson;
-import org.jetbrains.annotations.TestOnly;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-import de.faceco.mashovapi.components.*;
-
-import static org.junit.Assert.*;
-
 import static de.faceco.mashovapi.Secret.*;
+import static org.junit.Assert.*;
 
 public class APITest {
   private API api;
@@ -60,6 +57,20 @@ public class APITest {
     }
     assertTrue(nulls.size() > 0);
     System.out.println(nulls);
+  }
+  
+  @Test
+  public void bagrutGrades() throws IOException {
+    BagrutGrade[] grades = api.getBagrutGrades();
+    assertNotNull(grades);
+    Arrays.stream(grades).forEach(Assert::assertNotNull);
+  }
+  
+  @Test
+  public void bagrutTimes() throws IOException {
+    BagrutTime[] times = api.getBagrutTimes();
+    assertNotNull(times);
+    Arrays.stream(times).forEach(Assert::assertNotNull);
   }
   
   @Test
