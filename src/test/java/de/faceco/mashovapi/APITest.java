@@ -1,22 +1,17 @@
 package de.faceco.mashovapi;
 
-import java.io.File;
+import de.faceco.mashovapi.components.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.google.gson.Gson;
-import org.jetbrains.annotations.TestOnly;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-import de.faceco.mashovapi.components.*;
-
 import static org.junit.Assert.*;
-
-import static de.faceco.mashovapi.Secret.*;
 
 public class APITest {
   private API api;
@@ -26,9 +21,9 @@ public class APITest {
   public void before() throws IOException {
     api = API.getInstance();
   
-    api.fetchSchool(SCHOOL_ID);
+    api.fetchSchool(Integer.parseInt(System.getenv("SCHOOL_ID")));
     assertNotNull(api.getSchool());
-    LoginResponse lr = api.login(2020, MASHOV_USER, MASHOV_PASSWD);
+    LoginResponse lr = api.login(2020, System.getenv("MASHOV_USER"), System.getenv("MASHOV_PASSWD"));
     assertTrue(lr instanceof LoginInfo);
     li = (LoginInfo) lr;
     // Secret class = private information
@@ -42,11 +37,9 @@ public class APITest {
   
   @Test
   public void sendMessageReply() throws IOException {
-//    Conversation c = api.getInbox()[0];
-//    System.out.println(c);
-//    SendMessage msg = SendMessage.from(c)
-//        .body("<p>aaaaaaa</p>");
-//    System.out.println(new Gson().toJson(msg));
+    Conversation c = Arrays.stream(api.getInbox()).filter(conv -> conv.getConversationId().equals(System.getenv("MAIL_CONV"))).findAny().orElse(null);
+    SendMessage sm = SendMessage.from(c);
+    assertEquals(System.getenv("MAIL_SENDER"), sm.getRecipients()[0].getValue());
   }
   
   @Test
@@ -63,19 +56,43 @@ public class APITest {
   }
   
   @Test
+  public void bagrutGrades() throws IOException {
+    BagrutGrade[] grades = api.getBagrutGrades();
+    assertNotNull(grades);
+    Arrays.stream(grades).forEach(Assert::assertNotNull);
+  }
+  
+  @Test
+  public void moodleInfo() throws IOException {
+    assertEquals(System.getenv("ID_NUM"), "" + api.getMoodleInfo().getUsername());
+  }
+  
+  @Test
+  public void moodleAssign() throws IOException {
+    assertTrue(api.getMoodleAssignments().length > 0);
+  }
+  
+  @Test
+  public void bagrutTimes() throws IOException {
+    BagrutTime[] times = api.getBagrutTimes();
+    assertNotNull(times);
+    Arrays.stream(times).forEach(Assert::assertNotNull);
+  }
+  
+  @Test
   public void upload() throws IOException {
-    File f = new File("/home/rotem/Documents/out.pdf");
-    SendMessage test = SendMessage.asNew()
-        .attach(f)
-        .attach("/home/rotem/bitmap.png");
-    System.out.println(test);
+//    File f = new File("/home/rotem/Documents/out.pdf");
+//    SendMessage test = SendMessage.asNew()
+//        .attach(f)
+//        .attach("/home/rotem/bitmap.png");
+//    System.out.println(test);
   }
   
   @Test
   public void loginInfo() {
-    assertEquals(li.getCredential().getIdNumber(), ID_NUM);
-    assertEquals(li.getAccessToken().getSchoolOptions().getMoodleSite(), MOODLE_SITE);
-    assertTrue(li.getAccessToken().getUserOptions().hasEmailNotifications());
+    assertEquals(li.getCredential().getIdNumber(), Long.parseLong(System.getenv("ID_NUM")));
+    assertEquals(li.getAccessToken().getSchoolOptions().getMoodleSite(), System.getenv("MOODLE_SITE"));
+    assertFalse(li.getAccessToken().getUserOptions().hasEmailNotifications());
     assertEquals(li.getCredential().getSchoolId(), api.getSchool().getId());
   }
   
@@ -95,7 +112,7 @@ public class APITest {
   
   @Test
   public void birthday() throws IOException {
-    assertEquals(BDAY_YEAR, api.getBirthday().getYear());
+    assertEquals(2004, api.getBirthday().getYear());
   }
   
   @Test
@@ -119,6 +136,6 @@ public class APITest {
   
   @After
   public void after() throws IOException {
-    assertEquals(200, api.logout());
+    assertEquals(200, api.logout()); // Logout success code
   }
 }

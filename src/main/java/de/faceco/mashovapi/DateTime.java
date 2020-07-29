@@ -1,18 +1,15 @@
 package de.faceco.mashovapi;
 
-import com.google.common.base.MoreObjects;
-
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
 
-public class DateTime {
-  private int year;
+public final class DateTime {
+  private final int year;
   private int month;
-  private int day;
-  private int hour;
-  private int minute;
-  private int second;
+  private final int day;
+  private final int hour;
+  private final int minute;
+  private final int second;
   
   private DateTime(int year, int month, int day, int hour, int minute, int second) {
     this.year = year;

@@ -1,14 +1,16 @@
 package de.faceco.mashovapi.components;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.*;
-
 import com.google.gson.Gson;
 import okhttp3.*;
 import org.apache.tika.Tika;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@SuppressWarnings("ConstantConditions")
 public final class RequestController {
   /**
    * This is the base URL of the Mashov API
@@ -16,8 +18,8 @@ public final class RequestController {
   public static final String BASE_URL = "https://web.mashov.info/api";
   private static final String USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) " +
       "Chrome/81.0.4044.122 Safari/537.36";
-  private static Gson gson = new Gson();
-  private static OkHttpClient http
+  private static final Gson gson = new Gson();
+  private static final OkHttpClient http
       = new OkHttpClient.Builder()
       .build();
   private static String csrfToken = null;
@@ -116,6 +118,16 @@ public final class RequestController {
     return gson.fromJson(response.body().string(), Grade[].class);
   }
   
+  public static BagrutGrade[] bagrutGrades(String uid) throws IOException {
+    Response response = apiGet("/students/" + uid + "/bagrut/grades");
+    return gson.fromJson(response.body().string(), BagrutGrade[].class);
+  }
+  
+  public static BagrutTime[] bagrutTimes(String uid) throws IOException {
+    Response response = apiGet("/students/" + uid + "/bagrut/sheelonim");
+    return gson.fromJson(response.body().string(), BagrutTime[].class);
+  }
+  
   public static Birthday birthday(String uid) throws IOException {
     Response response = apiGet("/user/" + uid + "/birthday");
     return gson.fromJson(response.body().string(), Birthday.class);
@@ -187,7 +199,7 @@ public final class RequestController {
   
   public static Message send(SendMessage s) throws IOException {
     String msg = gson.toJson(s);
-  
+    
     MediaType json = MediaType.parse("application/json");
     RequestBody body = RequestBody.create(msg, json);
     
@@ -251,6 +263,16 @@ public final class RequestController {
     return file(msg, new File(path));
   }
   
+  public static MoodleAssignment[] moodleAssignments(String uid) throws IOException {
+    Response response = apiGet("/students/" + uid + "/moodle/assignments/grades");
+    return gson.fromJson(response.body().string(), MoodleAssignment[].class);
+  }
+  
+  public static MoodleInfo moodleInfo() throws IOException {
+    Response response = apiGet("/user/moodle");
+    return gson.fromJson(response.body().string(), MoodleInfo.class);
+  }
+  
   /**
    * Attempts to send a logout request to Mashov.
    *
@@ -259,6 +281,8 @@ public final class RequestController {
    */
   public static int logout() throws IOException {
     Response response = apiGet("/logout");
+    cookies.clear();
+    csrfToken = null;
     return response.code();
   }
   

@@ -44,19 +44,19 @@ public final class SendMessage {
   private final String senderId;
   private String subject;
   private String body;
-  private String lastUpdate;
+  private final String lastUpdate;
   private Recipient[] recipients;
   private Recipient[] cc;
   private Recipient[] bcc;
   private Attachment[] files;
-  private int folder;
+  private final int folder;
   private boolean isNew;
-  private boolean isDeleted;
-  private String[] labels;
-  private boolean sendOnBehalf;
-  private boolean sendViaEmail;
-  private boolean preventReply;
-  private String lastSaved;
+  private final boolean isDeleted;
+  private final String[] labels;
+  private final boolean sendOnBehalf;
+  private final boolean sendViaEmail;
+  private final boolean preventReply;
+  private final String lastSaved;
   
   private SendMessage(String messageId, String conversationId) {
     this.messageId = messageId;
@@ -81,14 +81,22 @@ public final class SendMessage {
     reply = true;
     isNew = true;
     subject = c.getSubject();
-    body = c.getMessages()[c.getMessages().length - 1].getBody();
-    
+    body = c.getMessages()[0].getBody();
+  
     Recipient[] recipients = API.getInstance().getMailRecipients();
-    String senderId = c.getMessages()[0].getSenderId();
+  
+    String sender = null;
+    for (Message m : c.getMessages()) {
+      if (!m.getSenderId().equals(this.senderId)) {
+        sender = m.getSenderId();
+        break;
+      }
+    }
+  
     Recipient og = null;
-    
+  
     for (Recipient r : recipients) {
-      if (r.getValue().equals(senderId)) {
+      if (r.getValue().equals(sender)) {
         og = r;
         break;
       }
@@ -276,6 +284,10 @@ public final class SendMessage {
     return messageId;
   }
   
+  public Recipient[] getRecipients() {
+    return recipients;
+  }
+  
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(this)
@@ -305,26 +317,26 @@ public final class SendMessage {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    
-    SendMessage that = (SendMessage) o;
-    
-    if (folder != that.folder) return false;
-    if (isNew != that.isNew) return false;
-    if (isDeleted != that.isDeleted) return false;
-    if (sendOnBehalf != that.sendOnBehalf) return false;
-    if (sendViaEmail != that.sendViaEmail) return false;
-    if (preventReply != that.preventReply) return false;
-    if (!messageId.equals(that.messageId)) return false;
-    if (!conversationId.equals(that.conversationId)) return false;
-    if (!senderId.equals(that.senderId)) return false;
-    if (!Objects.equals(subject, that.subject)) return false;
-    if (!Objects.equals(body, that.body)) return false;
-    if (!Objects.equals(lastUpdate, that.lastUpdate)) return false;
-    if (!Arrays.equals(recipients, that.recipients)) return false;
-    if (!Arrays.equals(cc, that.cc)) return false;
-    if (!Arrays.equals(bcc, that.bcc)) return false;
-    if (!Arrays.equals(labels, that.labels)) return false;
-    return Objects.equals(lastSaved, that.lastSaved);
+  
+    SendMessage sm = (SendMessage) o;
+  
+    if (folder != sm.folder) return false;
+    if (isNew != sm.isNew) return false;
+    if (isDeleted != sm.isDeleted) return false;
+    if (sendOnBehalf != sm.sendOnBehalf) return false;
+    if (sendViaEmail != sm.sendViaEmail) return false;
+    if (preventReply != sm.preventReply) return false;
+    if (!messageId.equals(sm.messageId)) return false;
+    if (!conversationId.equals(sm.conversationId)) return false;
+    if (!senderId.equals(sm.senderId)) return false;
+    if (!Objects.equals(subject, sm.subject)) return false;
+    if (!Objects.equals(body, sm.body)) return false;
+    if (!Objects.equals(lastUpdate, sm.lastUpdate)) return false;
+    if (!Arrays.equals(recipients, sm.recipients)) return false;
+    if (!Arrays.equals(cc, sm.cc)) return false;
+    if (!Arrays.equals(bcc, sm.bcc)) return false;
+    if (!Arrays.equals(labels, sm.labels)) return false;
+    return Objects.equals(lastSaved, sm.lastSaved);
   }
   
   @Override

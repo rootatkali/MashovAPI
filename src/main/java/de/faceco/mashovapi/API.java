@@ -1,12 +1,12 @@
 package de.faceco.mashovapi;
 
+import de.faceco.mashovapi.components.*;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Objects;
-
-import de.faceco.mashovapi.components.*;
 
 /**
  * The main class of the MashovAPI library. All requests to the Mashov servers should be handled from here, and not from
@@ -156,6 +156,14 @@ public final class API {
     return RequestController.grades(uid);
   }
   
+  public BagrutGrade[] getBagrutGrades() throws IOException {
+    return RequestController.bagrutGrades(uid);
+  }
+  
+  public BagrutTime[] getBagrutTimes() throws IOException {
+    return RequestController.bagrutTimes(uid);
+  }
+  
   /**
    * Attempts to fetch the birth date of the user.
    *
@@ -286,11 +294,20 @@ public final class API {
   /**
    * Attempts to fetch the list of behave events. A behave event can be an absent student, a class disruption,
    * a good note etc.
+   *
    * @return An array of Behave objects.
    * @throws IOException If the servers are not behaving.
    */
   public Behave[] getBehaves() throws IOException {
     return RequestController.behaves(uid);
+  }
+  
+  public MoodleInfo getMoodleInfo() throws IOException {
+    return RequestController.moodleInfo();
+  }
+  
+  public MoodleAssignment[] getMoodleAssignments() throws IOException {
+    return RequestController.moodleAssignments(uid);
   }
   
   /**
@@ -300,7 +317,14 @@ public final class API {
    * @throws IOException In case of an I/O exception.
    */
   public int logout() throws IOException {
-    return RequestController.logout();
+    int logout = 0;
+    try {
+      logout = RequestController.logout();
+      uid = null;
+    } catch (IOException e) {
+      throw e;
+    }
+    return logout;
   }
   
   /**
