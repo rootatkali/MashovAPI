@@ -84,11 +84,19 @@ public final class SendMessage {
     body = c.getMessages()[0].getBody();
   
     Recipient[] recipients = API.getInstance().getMailRecipients();
-    String senderId = c.getMessages()[c.getMessages().length - 1].getSenderId();
+  
+    String sender = null;
+    for (Message m : c.getMessages()) {
+      if (!m.getSenderId().equals(this.senderId)) {
+        sender = m.getSenderId();
+        break;
+      }
+    }
+  
     Recipient og = null;
-    
+  
     for (Recipient r : recipients) {
-      if (r.getValue().equals(senderId)) {
+      if (r.getValue().equals(sender)) {
         og = r;
         break;
       }
