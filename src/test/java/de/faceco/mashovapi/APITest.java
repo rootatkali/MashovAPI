@@ -37,11 +37,9 @@ public class APITest {
   
   @Test
   public void sendMessageReply() throws IOException {
-//    Conversation c = api.getInbox()[0];
-//    System.out.println(c);
-//    SendMessage msg = SendMessage.from(c)
-//        .body("<p>aaaaaaa</p>");
-//    System.out.println(new Gson().toJson(msg));
+    Conversation c = Arrays.stream(api.getInbox()).filter(conv -> conv.getConversationId().equals(System.getenv("MAIL_CONV"))).findAny().orElse(null);
+    SendMessage sm = SendMessage.from(c);
+    assertEquals(System.getenv("MAIL_SENDER"), sm.getRecipients()[0].getValue());
   }
   
   @Test
