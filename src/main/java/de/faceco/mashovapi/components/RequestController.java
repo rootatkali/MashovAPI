@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@SuppressWarnings("ConstantConditions")
 public final class RequestController {
   /**
    * This is the base URL of the Mashov API
@@ -198,7 +199,7 @@ public final class RequestController {
   
   public static Message send(SendMessage s) throws IOException {
     String msg = gson.toJson(s);
-  
+    
     MediaType json = MediaType.parse("application/json");
     RequestBody body = RequestBody.create(msg, json);
     
@@ -262,6 +263,16 @@ public final class RequestController {
     return file(msg, new File(path));
   }
   
+  public static MoodleAssignment[] moodleAssignments(String uid) throws IOException {
+    Response response = apiGet("/students/" + uid + "/moodle/assignments/grades");
+    return gson.fromJson(response.body().string(), MoodleAssignment[].class);
+  }
+  
+  public static MoodleInfo moodleInfo() throws IOException {
+    Response response = apiGet("/user/moodle");
+    return gson.fromJson(response.body().string(), MoodleInfo.class);
+  }
+  
   /**
    * Attempts to send a logout request to Mashov.
    *
@@ -270,6 +281,8 @@ public final class RequestController {
    */
   public static int logout() throws IOException {
     Response response = apiGet("/logout");
+    cookies.clear();
+    csrfToken = null;
     return response.code();
   }
   

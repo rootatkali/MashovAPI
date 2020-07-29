@@ -294,11 +294,20 @@ public final class API {
   /**
    * Attempts to fetch the list of behave events. A behave event can be an absent student, a class disruption,
    * a good note etc.
+   *
    * @return An array of Behave objects.
    * @throws IOException If the servers are not behaving.
    */
   public Behave[] getBehaves() throws IOException {
     return RequestController.behaves(uid);
+  }
+  
+  public MoodleInfo getMoodleInfo() throws IOException {
+    return RequestController.moodleInfo();
+  }
+  
+  public MoodleAssignment[] getMoodleAssignments() throws IOException {
+    return RequestController.moodleAssignments(uid);
   }
   
   /**
@@ -308,7 +317,14 @@ public final class API {
    * @throws IOException In case of an I/O exception.
    */
   public int logout() throws IOException {
-    return RequestController.logout();
+    int logout = 0;
+    try {
+      logout = RequestController.logout();
+      uid = null;
+    } catch (IOException e) {
+      throw e;
+    }
+    return logout;
   }
   
   /**

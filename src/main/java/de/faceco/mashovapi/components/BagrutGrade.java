@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.Objects;
 
-public class BagrutGrade {
+public final class BagrutGrade {
   private String studentGuid;
   private int moed;
   private int semel;
