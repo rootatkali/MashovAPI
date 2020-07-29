@@ -1,4 +1,4 @@
-# MashovAPI
+# MashovAPI [![Build Status](https://travis-ci.org/rootatkali/MashovAPI.svg?branch=master)](https://travis-ci.org/rootatkali/MashovAPI)
 An open-source API for the Israeli Mashov school management system, written in Java.
 This API is WIP.
 
