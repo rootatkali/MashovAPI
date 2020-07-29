@@ -2,6 +2,4 @@ language: java
 
 os: linux
 dist: bionic
-jdk:
-  - oraclejdk8
-  - openjdk8
+jdk: openjdk8
