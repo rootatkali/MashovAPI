@@ -7,7 +7,7 @@ import java.util.Objects;
 
 /**
  * A container representing a grading event, which may or may not have a numerical grade. The natural order of Grade
- * elements (as specified by {@link #compareTo(Grade)} is numGrade -> textualGrade.
+ * elements (as specified by {@link #compareTo(Grade)} is numGrade -- textualGrade.
  *
  * @see API#getGrades()
  */
