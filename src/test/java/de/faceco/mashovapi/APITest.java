@@ -6,7 +6,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -67,6 +66,16 @@ public class APITest {
   }
   
   @Test
+  public void moodleInfo() throws IOException {
+    assertEquals(ID_NUM, api.getMoodleInfo().getUsername());
+  }
+  
+  @Test
+  public void moodleAssign() throws IOException {
+    assertTrue(api.getMoodleAssignments().length > 0);
+  }
+  
+  @Test
   public void bagrutTimes() throws IOException {
     BagrutTime[] times = api.getBagrutTimes();
     assertNotNull(times);
@@ -75,18 +84,18 @@ public class APITest {
   
   @Test
   public void upload() throws IOException {
-    File f = new File("/home/rotem/Documents/out.pdf");
-    SendMessage test = SendMessage.asNew()
-        .attach(f)
-        .attach("/home/rotem/bitmap.png");
-    System.out.println(test);
+//    File f = new File("/home/rotem/Documents/out.pdf");
+//    SendMessage test = SendMessage.asNew()
+//        .attach(f)
+//        .attach("/home/rotem/bitmap.png");
+//    System.out.println(test);
   }
   
   @Test
   public void loginInfo() {
     assertEquals(li.getCredential().getIdNumber(), ID_NUM);
     assertEquals(li.getAccessToken().getSchoolOptions().getMoodleSite(), MOODLE_SITE);
-    assertTrue(li.getAccessToken().getUserOptions().hasEmailNotifications());
+    assertFalse(li.getAccessToken().getUserOptions().hasEmailNotifications());
     assertEquals(li.getCredential().getSchoolId(), api.getSchool().getId());
   }
   
@@ -130,6 +139,6 @@ public class APITest {
   
   @After
   public void after() throws IOException {
-    assertEquals(200, api.logout());
+    assertEquals(200, api.logout()); // Logout success code
   }
 }

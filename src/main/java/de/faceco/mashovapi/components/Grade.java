@@ -1,9 +1,7 @@
 package de.faceco.mashovapi.components;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.ComparisonChain;
 import de.faceco.mashovapi.API;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
@@ -135,10 +133,22 @@ public final class Grade implements Comparable<Grade> {
   
   @Override
   public int compareTo(Grade g) {
-    return ComparisonChain.start()
-        .compare(grade, g.grade)
-        .compare(textualGrade, g.textualGrade)
-        .result();
+    if (g == null) return 1;
+    if (grade != null && g.grade != null) {
+      return Integer.compare(grade, g.grade);
+    } else if (grade != null) {
+      return 1;
+    } else if (g.grade != null) {
+      return -1;
+    } else if (textualGrade != null && g.textualGrade != null) {
+      return textualGrade.compareTo(g.textualGrade);
+    } else if (textualGrade != null) {
+      return 1;
+    } else if (g.textualGrade != null) {
+      return -1;
+    } else {
+      return 0;
+    }
   }
   
   @Override

@@ -4,7 +4,7 @@ import com.google.common.base.MoreObjects;
 
 import java.util.Objects;
 
-public class BagrutTime {
+public final class BagrutTime {
   private long id;
   private String name;
   private int moed;
