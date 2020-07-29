@@ -81,10 +81,10 @@ public final class SendMessage {
     reply = true;
     isNew = true;
     subject = c.getSubject();
-    body = c.getMessages()[c.getMessages().length - 1].getBody();
-    
+    body = c.getMessages()[0].getBody();
+  
     Recipient[] recipients = API.getInstance().getMailRecipients();
-    String senderId = c.getMessages()[0].getSenderId();
+    String senderId = c.getMessages()[c.getMessages().length - 1].getSenderId();
     Recipient og = null;
     
     for (Recipient r : recipients) {
@@ -274,6 +274,10 @@ public final class SendMessage {
   
   String getMessageId() {
     return messageId;
+  }
+  
+  public Recipient[] getRecipients() {
+    return recipients;
   }
   
   @Override
