@@ -27,7 +27,7 @@ public final class MoodleInfo {
    * @return A string representing a URL
    */
   public String generateAssignmentLink(LoginInfo loginInfo, long linkId) {
-    return String.format("%s/login/qslogin.php?mu=%d&mp=%s&wantsurl=mod/assign/view.php?id=%d",
+    return String.format("%slogin/qslogin.php?mu=%d&mp=%s&wantsurl=mod/assign/view.php?id=%d",
         loginInfo.getAccessToken().getSchoolOptions().getMoodleSite(),
         username,
         password,

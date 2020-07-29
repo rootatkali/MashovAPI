@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static de.faceco.mashovapi.Secret.*;
 import static org.junit.Assert.*;
 
 public class APITest {
@@ -22,9 +21,9 @@ public class APITest {
   public void before() throws IOException {
     api = API.getInstance();
   
-    api.fetchSchool(SCHOOL_ID);
+    api.fetchSchool(Integer.parseInt(System.getenv("SCHOOL_ID")));
     assertNotNull(api.getSchool());
-    LoginResponse lr = api.login(2020, MASHOV_USER, MASHOV_PASSWD);
+    LoginResponse lr = api.login(2020, System.getenv("MASHOV_USER"), System.getenv("MASHOV_PASSWD"));
     assertTrue(lr instanceof LoginInfo);
     li = (LoginInfo) lr;
     // Secret class = private information
@@ -67,7 +66,7 @@ public class APITest {
   
   @Test
   public void moodleInfo() throws IOException {
-    assertEquals(ID_NUM, api.getMoodleInfo().getUsername());
+    assertEquals(System.getenv("ID_NUM"), "" + api.getMoodleInfo().getUsername());
   }
   
   @Test
@@ -93,8 +92,8 @@ public class APITest {
   
   @Test
   public void loginInfo() {
-    assertEquals(li.getCredential().getIdNumber(), ID_NUM);
-    assertEquals(li.getAccessToken().getSchoolOptions().getMoodleSite(), MOODLE_SITE);
+    assertEquals(li.getCredential().getIdNumber(), Long.parseLong(System.getenv("ID_NUM")));
+    assertEquals(li.getAccessToken().getSchoolOptions().getMoodleSite(), System.getenv("MOODLE_SITE"));
     assertFalse(li.getAccessToken().getUserOptions().hasEmailNotifications());
     assertEquals(li.getCredential().getSchoolId(), api.getSchool().getId());
   }
@@ -115,7 +114,7 @@ public class APITest {
   
   @Test
   public void birthday() throws IOException {
-    assertEquals(BDAY_YEAR, api.getBirthday().getYear());
+    assertEquals(2004, api.getBirthday().getYear());
   }
   
   @Test
