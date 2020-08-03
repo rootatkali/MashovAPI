@@ -39,7 +39,10 @@ School[] all = api.getAllSchools();
 After selecting a school, you need to log in:
 
 ```java
-LoginInfo loginInfo = api.login(2020, "username", "password");
+LoginResult loginResult = api.login(2020, "username", "password");
+if (loginResult instanceof LoginInfo) {
+  LoginInfo loginInfo = (LoginInfo) loginResult;
+}
 ```
 
 After logging in, you can either read the login info or request more data, such as the grades of the student:

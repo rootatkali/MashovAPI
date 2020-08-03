@@ -12,6 +12,7 @@ public final class BagrutGrade {
   private String name;
   private int semelRashi;
   private Integer shnati;
+  private Integer test;
   @SerializedName("final")
   private Integer finalGrade;
   private boolean going;
@@ -45,6 +46,10 @@ public final class BagrutGrade {
     return shnati;
   }
   
+  public Integer getTest() {
+    return test;
+  }
+  
   public Integer getFinal() {
     return finalGrade;
   }
@@ -66,7 +71,8 @@ public final class BagrutGrade {
         .add("name", name)
         .add("semelRashi", semelRashi)
         .add("shnati", shnati)
-        .add("finalGrade", finalGrade)
+        .add("test", test)
+        .add("final", finalGrade)
         .add("going", going)
         .add("examRoomNumber", examRoomNumber)
         .toString();
@@ -84,12 +90,13 @@ public final class BagrutGrade {
         Objects.equals(studentGuid, that.studentGuid) &&
         Objects.equals(name, that.name) &&
         Objects.equals(shnati, that.shnati) &&
+        Objects.equals(test, that.test) &&
         Objects.equals(finalGrade, that.finalGrade) &&
         Objects.equals(examRoomNumber, that.examRoomNumber);
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(studentGuid, moed, semel, name, semelRashi, shnati, finalGrade, going, examRoomNumber);
+    return Objects.hash(studentGuid, moed, semel, name, semelRashi, shnati, test, finalGrade, going, examRoomNumber);
   }
 }
