@@ -164,6 +164,14 @@ public final class API {
     return RequestController.bagrutTimes(uid);
   }
   
+  public Hatama[] getHatamot() throws IOException {
+    return RequestController.hatamot(uid);
+  }
+  
+  public StudyMaterial[] getStudyMaterials() throws IOException {
+    return RequestController.studyMaterials(uid);
+  }
+  
   /**
    * Attempts to fetch the birth date of the user.
    *

@@ -160,6 +160,14 @@ public final class RequestController {
     return response.body().bytes();
   }
   
+  public static Hatama[] hatamot(String uid) throws IOException {
+    return gson.fromJson(apiGet("/students/" + uid + "/hatamot").body().string(), Hatama[].class);
+  }
+  
+  public static StudyMaterial[] studyMaterials(String uid) throws IOException {
+    return gson.fromJson(apiGet("/students/" + uid + "/files").body().string(), StudyMaterial[].class);
+  }
+  
   public static Recipient[] recipients() throws IOException {
     Response response = apiGet("/mail/recipients");
     return gson.fromJson(response.body().string(), Recipient[].class);
