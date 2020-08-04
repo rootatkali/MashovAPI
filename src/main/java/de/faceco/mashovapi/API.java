@@ -179,7 +179,7 @@ public final class API {
   public Homework[] getHomework() throws IOException {
     return RequestController.homework(uid);
   }
-  
+
   /**
    * Attempts to fetch the birth date of the user.
    *

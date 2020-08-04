@@ -49,7 +49,7 @@ public final class BagrutGrade {
   public Integer getTest() {
     return test;
   }
-  
+
   public Integer getFinal() {
     return finalGrade;
   }
@@ -98,5 +98,6 @@ public final class BagrutGrade {
   @Override
   public int hashCode() {
     return Objects.hash(studentGuid, moed, semel, name, semelRashi, shnati, test, finalGrade, going, examRoomNumber);
+    return Objects.hash(studentGuid, moed, semel, name, semelRashi, shnati, finalGrade, going, examRoomNumber);
   }
 }
