@@ -28,10 +28,10 @@ import java.util.Objects;
  *   api.fetchSchool(schoolId);
  * </pre>
  */
+@SuppressWarnings("unused")
 public final class API {
   private School school;
   private String uid; // Unique User ID gave by the Mashov interface
-  
   
   private static API singleton;
   
@@ -164,6 +164,22 @@ public final class API {
     return RequestController.bagrutTimes(uid);
   }
   
+  public Hatama[] getHatamot() throws IOException {
+    return RequestController.hatamot(uid);
+  }
+  
+  public StudyMaterial[] getStudyMaterials() throws IOException {
+    return RequestController.studyMaterials(uid);
+  }
+  
+  public Announcement[] getMessageBoard() throws IOException {
+    return RequestController.messageBoard(uid);
+  }
+  
+  public Homework[] getHomework() throws IOException {
+    return RequestController.homework(uid);
+  }
+
   /**
    * Attempts to fetch the birth date of the user.
    *
@@ -249,9 +265,7 @@ public final class API {
    * @see #getInbox(int)
    */
   public Conversation[] getInbox() throws IOException {
-    Conversation[] inbox = RequestController.inbox();
-    completeConversations(inbox);
-    return inbox;
+    return RequestController.inbox();
   }
   
   /**
@@ -264,9 +278,7 @@ public final class API {
    */
   @Deprecated
   public Conversation[] getInbox(int page) throws IOException {
-    Conversation[] inbox = RequestController.inbox();
-    completeConversations(inbox);
-    return inbox;
+    return RequestController.inbox();
   }
   
   public Conversation[] getUnreadMail() throws IOException {
@@ -278,13 +290,17 @@ public final class API {
     return RequestController.unread();
   }
   
+  public Conversation[] getOutbox() throws IOException {
+    return RequestController.outbox();
+  }
+  
   /**
    * Attempts to fetch the missing details about a Conversation - messages and recipients.
    *
-   * @deprecated Feature incorporated into {@link #getInbox(int)}
    * @param c The Conversation to look in.
    * @return A Conversation element with all the required detailed.
    * @throws IOException In case of an I/O error.
+   * @deprecated Feature incorporated into {@link #getInbox(int)}
    */
   @Deprecated
   public Conversation getMessages(Conversation c) throws IOException {
@@ -317,13 +333,8 @@ public final class API {
    * @throws IOException In case of an I/O exception.
    */
   public int logout() throws IOException {
-    int logout = 0;
-    try {
-      logout = RequestController.logout();
-      uid = null;
-    } catch (IOException e) {
-      throw e;
-    }
+    int logout = RequestController.logout();
+    uid = null;
     return logout;
   }
   

@@ -160,6 +160,22 @@ public final class RequestController {
     return response.body().bytes();
   }
   
+  public static Hatama[] hatamot(String uid) throws IOException {
+    return gson.fromJson(apiGet("/students/" + uid + "/hatamot").body().string(), Hatama[].class);
+  }
+  
+  public static StudyMaterial[] studyMaterials(String uid) throws IOException {
+    return gson.fromJson(apiGet("/students/" + uid + "/files").body().string(), StudyMaterial[].class);
+  }
+  
+  public static Announcement[] messageBoard(String uid) throws IOException {
+    return gson.fromJson(apiGet("/students/" + uid + "/messageBoard").body().string(), Announcement[].class);
+  }
+  
+  public static Homework[] homework(String uid) throws IOException {
+    return gson.fromJson(apiGet("/students/" + uid + "/homework").body().string(), Homework[].class);
+  }
+  
   public static Recipient[] recipients() throws IOException {
     Response response = apiGet("/mail/recipients");
     return gson.fromJson(response.body().string(), Recipient[].class);
@@ -216,6 +232,11 @@ public final class RequestController {
   
   public static Conversation[] inbox() throws IOException {
     Response response = apiGet("/mail/inbox/conversations");
+    return gson.fromJson(response.body().string(), Conversation[].class);
+  }
+  
+  public static Conversation[] outbox() throws IOException {
+    Response response = apiGet("/mail/sent/conversations");
     return gson.fromJson(response.body().string(), Conversation[].class);
   }
   
