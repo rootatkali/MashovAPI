@@ -14,7 +14,7 @@ repositories {
 // ...
 
 dependencies {
-  implementation 'de.faceco:MashovAPI:1.0.10' // For the latest version
+  implementation 'de.faceco:MashovAPI:1.0.11' // For the latest version
 }
 ```
 
