@@ -72,19 +72,25 @@ public class APITest {
   }
   
   @Test
+  public void hatamot() throws IOException {
+    assertEquals(0, api.getHatamot().length);
+  }
+  
+  @Test
   public void bagrutTimes() throws IOException {
     BagrutTime[] times = api.getBagrutTimes();
     assertNotNull(times);
     Arrays.stream(times).forEach(Assert::assertNotNull);
   }
   
+  @SuppressWarnings("RedundantThrows")
   @Test
   public void upload() throws IOException {
 //    File f = new File("/home/rotem/Documents/out.pdf");
 //    SendMessage test = SendMessage.asNew()
 //        .attach(f)
 //        .attach("/home/rotem/bitmap.png");
-//    System.out.println(test);
+//    System.out.println(test)
   }
   
   @Test
