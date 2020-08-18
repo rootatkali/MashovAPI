@@ -1,14 +1,20 @@
 package de.faceco.mashovapi.components;
 
 import com.google.gson.Gson;
+import de.faceco.mashovapi.API;
 import okhttp3.*;
 import org.apache.tika.Tika;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.function.Consumer;
 
 @SuppressWarnings("ConstantConditions")
 public final class RequestController {
@@ -22,32 +28,75 @@ public final class RequestController {
   private static final OkHttpClient http
       = new OkHttpClient.Builder()
       .build();
-  private static String csrfToken = null;
   private static final Map<String, String> cookies = new HashMap<>();
+  private static String csrfToken = null;
   
   public static School[] schools() throws IOException {
-    Request request = new Request.Builder()
-        .url(BASE_URL + "/schools")
-        .method("GET", null)
-        .addHeader("User-Agent", USER_AGENT)
-        .build();
+    Request request = Requests.SCHOOLS;
     Response response = http.newCall(request).execute();
     
     return gson.fromJson(response.body().string(), School[].class);
   }
   
-  public static LoginResponse login(School s, int year, String user, String pass) throws IOException {
-    Login l = new Login(s, year, user, pass);
+  private static <T> void async(Call call, Consumer<T> onResult, Runnable onFail, Class<T> type) throws IOException {
+    CallbackFuture future = new CallbackFuture();
+    call.enqueue(future);
+    try {
+      Response response = future.get();
+      if (response.isSuccessful()) {
+        T result = gson.fromJson(response.body().string(), type);
+        onResult.accept(result);
+      } else {
+        onFail.run();
+      }
+    } catch (InterruptedException | ExecutionException e) {
+      e.printStackTrace();
+    }
+  }
+  
+  private static <T> void async(Request request, Consumer<T> onResult, Runnable onFail, Class<T> type)
+      throws IOException {
+    async(http.newCall(request), onResult, onFail, type);
+  }
+  
+  public static void schoolsAsync(Consumer<School[]> onResult, Runnable onFail) throws IOException {
+    async(Requests.SCHOOLS, onResult, onFail, School[].class);
+  }
+  
+  private static void handleCookies(Request request, Response response) {
+    cookies.clear();
+    csrfToken = null;
     
-    MediaType json = MediaType.parse("application/json");
-    RequestBody body = RequestBody.create(gson.toJson(l), json);
-    
-    Request request = new Request.Builder()
-        .url(BASE_URL + "/login")
-        .method("POST", body)
-        .addHeader("User-Agent", USER_AGENT)
-        .addHeader("Content-Type", "application/json")
-        .build();
+    Headers headers = response.headers();
+    csrfToken = Cookie.parse(request.url(), headers.get("Set-Cookie")).value();
+    List<String> rawCookies = headers.values("Set-Cookie");
+    for (String c : rawCookies) {
+      String[] split = c.trim().split("=", 2);
+      cookies.put(split[0], split[1].substring(0, split[1].indexOf(";")));
+    }
+  }
+  
+  public static void loginAsync(Login l, Consumer<LoginInfo> onResult, Runnable onFail) throws IOException {
+    CallbackFuture future = new CallbackFuture();
+    Request request = Requests.login(l);
+    http.newCall(request).enqueue(future);
+    try {
+      Response response = future.get();
+      if (response.isSuccessful()) {
+        handleCookies(request, response);
+        LoginInfo li = gson.fromJson(response.body().string(), LoginInfo.class);
+        API.getInstance().setUid(li.getCredential().getUserId());
+        onResult.accept(li);
+      } else {
+        onFail.run();
+      }
+    } catch (InterruptedException | ExecutionException e) {
+      e.printStackTrace();
+    }
+  }
+  
+  public static LoginResponse login(Login l) throws IOException {
+    Request request = Requests.login(l);
     Response response = http.newCall(request).execute();
     
     int code = response.code();
@@ -57,17 +106,7 @@ public final class RequestController {
       return fail;
     }
     
-    cookies.clear();
-    csrfToken = null;
-    
-    Headers headers = response.headers();
-    csrfToken = Cookie.parse(request.url(), headers.get("Set-Cookie")).value();
-    List<String> rawCookies = headers.values("Set-Cookie");
-    
-    for (String c : rawCookies) {
-      String[] split = c.trim().split("=", 2);
-      cookies.put(split[0], split[1].substring(0, split[1].indexOf(";")));
-    }
+    handleCookies(request, response);
     
     return gson.fromJson(response.body().string(), LoginInfo.class);
   }
@@ -94,15 +133,15 @@ public final class RequestController {
   }
   
   /**
-   * Attempts to perform a GET request to the API, based on the requested path.
+   * Attempts to create a GET request to the API based on the requested path, and wrap it in a {@link Call}.
    *
    * <p>The request has the following headers:
    * User-Agent, Cookie, x-csrf-token</p>
+   *
    * @param path The path to the API contents.
    * @return A {@link Response} corresponding to the API server's response.
-   * @throws IOException If anything goes wrong.
    */
-  private static Response apiGet(String path) throws IOException {
+  private static Call apiCall(String path) {
     Request request = new Request.Builder()
         .url(BASE_URL + path)
         .method("GET", null)
@@ -110,42 +149,75 @@ public final class RequestController {
         .addHeader("x-csrf-token", csrfToken)
         .addHeader("Cookie", cookieHeader())
         .build();
-    return http.newCall(request).execute();
+    return http.newCall(request);
   }
   
   public static Grade[] grades(String uid) throws IOException {
-    Response response = apiGet("/students/" + uid + "/grades");
+    Response response = apiCall("/students/" + uid + "/grades").execute();
     return gson.fromJson(response.body().string(), Grade[].class);
   }
   
+  public static void gradesAsync(String uid, Consumer<Grade[]> onResult, Runnable onFail) throws IOException {
+    async(apiCall("/students/" + uid + "/grades"), onResult, onFail, Grade[].class);
+  }
+  
   public static BagrutGrade[] bagrutGrades(String uid) throws IOException {
-    Response response = apiGet("/students/" + uid + "/bagrut/grades");
+    Response response = apiCall("/students/" + uid + "/bagrut/grades").execute();
     return gson.fromJson(response.body().string(), BagrutGrade[].class);
   }
   
+  public static void bagrutGradesAsync(String uid, Consumer<BagrutGrade[]> onResult, Runnable onFail)
+      throws IOException {
+    async(apiCall("/students/" + uid + "/bagrut/grades"), onResult, onFail, BagrutGrade[].class);
+  }
+  
   public static BagrutTime[] bagrutTimes(String uid) throws IOException {
-    Response response = apiGet("/students/" + uid + "/bagrut/sheelonim");
+    Response response = apiCall("/students/" + uid + "/bagrut/sheelonim").execute();
     return gson.fromJson(response.body().string(), BagrutTime[].class);
   }
   
+  public static void bagrutTimesAsync(String uid, Consumer<BagrutTime[]> onResult, Runnable onFail) throws IOException {
+    async(apiCall("/students/" + uid + "/bagrut/sheelonim"), onResult, onFail, BagrutTime[].class);
+  }
+  
   public static Birthday birthday(String uid) throws IOException {
-    Response response = apiGet("/user/" + uid + "/birthday");
+    Response response = apiCall("/user/" + uid + "/birthday").execute();
     return gson.fromJson(response.body().string(), Birthday.class);
   }
   
+  public static void birthdayAsync(String uid, Consumer<Birthday> onResult, Runnable onFail) throws IOException {
+    async(apiCall("/user/" + uid + "/birthday"), onResult, onFail, Birthday.class);
+  }
+  
   public static Group[] groups(String uid) throws IOException {
-    Response response = apiGet("/students/" + uid + "/groups");
+    Response response = apiCall("/students/" + uid + "/groups").execute();
     return gson.fromJson(response.body().string(), Group[].class);
   }
   
+  public static void groupsAsync(String uid, Consumer<Group[]> onResult, Runnable onFail) throws IOException {
+    async(apiCall("/students/" + uid + "/groups"), onResult, onFail, Group[].class);
+  }
+  
   public static Period[] bells() throws IOException {
-    Response response = apiGet("/bells");
+    Response response = apiCall("/bells").execute();
     return gson.fromJson(response.body().string(), Period[].class);
   }
   
+  public static void bellsAsync(Consumer<Period[]> onResult, Runnable onFail) throws IOException {
+    Consumer<Period[]> sortAndAccept = periods -> {
+      Arrays.sort(periods);
+      onResult.accept(periods);
+    };
+    async(apiCall("/bells"), sortAndAccept, onFail, Period[].class);
+  }
+  
   public static Lesson[] timetable(String uid) throws IOException {
-    Response response = apiGet("/students/" + uid + "/timetable");
+    Response response = apiCall("/students/" + uid + "/timetable").execute();
     return gson.fromJson(response.body().string(), Lesson[].class);
+  }
+  
+  public static void timetableAsync(String uid, Consumer<Lesson[]> onResult, Runnable onFail) throws IOException {
+    async(apiCall("/students/" + uid + "/timetable"), onResult, onFail, Lesson[].class);
   }
   
   /**
@@ -156,29 +228,68 @@ public final class RequestController {
    * @throws IOException In case of an I/O server exception or an unauthorized request.
    */
   public static byte[] picture(String uid) throws IOException {
-    Response response = apiGet("/user/" + uid + "/picture");
+    Response response = apiCall("/user/" + uid + "/picture").execute();
     return response.body().bytes();
   }
   
+  public static void pictureAsync(String uid, Consumer<byte[]> onResult, Runnable onFail) throws IOException {
+    CallbackFuture future = new CallbackFuture();
+    apiCall("/user/" + uid + "/picture").enqueue(future);
+    
+    try {
+      Response response = future.get();
+      if (response.isSuccessful()) {
+        onResult.accept(response.body().bytes());
+      } else {
+        onFail.run();
+      }
+    } catch (InterruptedException | ExecutionException e) {
+      e.printStackTrace();
+    }
+  }
+  
   public static Hatama[] hatamot(String uid) throws IOException {
-    return gson.fromJson(apiGet("/students/" + uid + "/hatamot").body().string(), Hatama[].class);
+    return gson.fromJson(apiCall("/students/" + uid + "/hatamot").execute().body().string(), Hatama[].class);
+  }
+  
+  public static void hatamotAsync(String uid, Consumer<Hatama[]> onResult, Runnable onFail) throws IOException {
+    async(apiCall("/students/" + uid + "/hatamot"), onResult, onFail, Hatama[].class);
   }
   
   public static StudyMaterial[] studyMaterials(String uid) throws IOException {
-    return gson.fromJson(apiGet("/students/" + uid + "/files").body().string(), StudyMaterial[].class);
+    return gson.fromJson(apiCall("/students/" + uid + "/files").execute().body().string(), StudyMaterial[].class);
+  }
+  
+  public static void studyMaterialsAsync(String uid, Consumer<StudyMaterial[]> onResult, Runnable onFail)
+      throws IOException {
+    async(apiCall("/students/" + uid + "/files"), onResult, onFail, StudyMaterial[].class);
   }
   
   public static Announcement[] messageBoard(String uid) throws IOException {
-    return gson.fromJson(apiGet("/students/" + uid + "/messageBoard").body().string(), Announcement[].class);
+    return gson.fromJson(apiCall("/students/" + uid + "/messageBoard").execute().body().string(),
+        Announcement[].class);
+  }
+  
+  public static void messageBoardAsync(String uid, Consumer<Announcement[]> onResult, Runnable onFail)
+      throws IOException {
+    async(apiCall("/students/" + uid + "/messageBoard"), onResult, onFail, Announcement[].class);
   }
   
   public static Homework[] homework(String uid) throws IOException {
-    return gson.fromJson(apiGet("/students/" + uid + "/homework").body().string(), Homework[].class);
+    return gson.fromJson(apiCall("/students/" + uid + "/homework").execute().body().string(), Homework[].class);
+  }
+  
+  public static void homeworkAsync(String uid, Consumer<Homework[]> onResult, Runnable onFail) throws IOException {
+    async(apiCall("/students/" + uid + "/homework"), onResult, onFail, Homework[].class);
   }
   
   public static Recipient[] recipients() throws IOException {
-    Response response = apiGet("/mail/recipients");
+    Response response = apiCall("/mail/recipients").execute();
     return gson.fromJson(response.body().string(), Recipient[].class);
+  }
+  
+  public static void recipientsAsync(Consumer<Recipient[]> onResult, Runnable onFail) throws IOException {
+    async(apiCall("/mail/recipients"), onResult, onFail, Recipient[].class);
   }
   
   static String msgIdReply(Conversation c) throws IOException {
@@ -231,28 +342,48 @@ public final class RequestController {
   }
   
   public static Conversation[] inbox() throws IOException {
-    Response response = apiGet("/mail/inbox/conversations");
+    Response response = apiCall("/mail/inbox/conversations").execute();
     return gson.fromJson(response.body().string(), Conversation[].class);
+  }
+  
+  public static void inboxAsync(Consumer<Conversation[]> onResult, Runnable onFail) throws IOException {
+    async(apiCall("/mail/inbox/conversations"), onResult, onFail, Conversation[].class);
   }
   
   public static Conversation[] outbox() throws IOException {
-    Response response = apiGet("/mail/sent/conversations");
+    Response response = apiCall("/mail/sent/conversations").execute();
     return gson.fromJson(response.body().string(), Conversation[].class);
+  }
+  
+  public static void outboxAsync(Consumer<Conversation[]> onResult, Runnable onFail) throws IOException {
+    async(apiCall("/mail/sent/conversations"), onResult, onFail, Conversation[].class);
   }
   
   public static Conversation[] unread() throws IOException {
-    Response response = apiGet("/mail/unread/conversations");
+    Response response = apiCall("/mail/unread/conversations").execute();
     return gson.fromJson(response.body().string(), Conversation[].class);
   }
   
+  public static void unreadAsync(Consumer<Conversation[]> onResult, Runnable onFail) throws IOException {
+    async(apiCall("/mail/unread/conversations"), onResult, onFail, Conversation[].class);
+  }
+  
   public static Conversation singleCon(String cid) throws IOException {
-    Response response = apiGet("/mail/conversations/" + cid);
+    Response response = apiCall("/mail/conversations/" + cid).execute();
     return gson.fromJson(response.body().string(), Conversation.class);
   }
   
+  public static void singleConAsync(String cid, Consumer<Conversation> onResult, Runnable onFail) throws IOException {
+    async(apiCall("/mail/conversations/" + cid), onResult, onFail, Conversation.class);
+  }
+  
   public static Behave[] behaves(String uid) throws IOException {
-    Response response = apiGet("/students/" + uid + "/behave");
+    Response response = apiCall("/students/" + uid + "/behave").execute();
     return gson.fromJson(response.body().string(), Behave[].class);
+  }
+  
+  public static void behavesAsync(String uid, Consumer<Behave[]> onResult, Runnable onFail) throws IOException {
+    async(apiCall("/students/" + uid + "/behave"), onResult, onFail, Behave[].class);
   }
   
   public static Attachment file(SendMessage msg, File file) throws IOException {
@@ -285,13 +416,22 @@ public final class RequestController {
   }
   
   public static MoodleAssignment[] moodleAssignments(String uid) throws IOException {
-    Response response = apiGet("/students/" + uid + "/moodle/assignments/grades");
+    Response response = apiCall("/students/" + uid + "/moodle/assignments/grades").execute();
     return gson.fromJson(response.body().string(), MoodleAssignment[].class);
   }
   
+  public static void moodleAssignmentsAsync(String uid, Consumer<MoodleAssignment[]> onResult, Runnable onFail)
+      throws IOException {
+    async(apiCall("/students/" + uid + "/moodle/assignments/grades"), onResult, onFail, MoodleAssignment[].class);
+  }
+  
   public static MoodleInfo moodleInfo() throws IOException {
-    Response response = apiGet("/user/moodle");
+    Response response = apiCall("/user/moodle").execute();
     return gson.fromJson(response.body().string(), MoodleInfo.class);
+  }
+  
+  public static void moodleInfoAsync(Consumer<MoodleInfo> onResult, Runnable onFail) throws IOException {
+    async(apiCall("/user/moodle"), onResult, onFail, MoodleInfo.class);
   }
   
   /**
@@ -301,13 +441,41 @@ public final class RequestController {
    * @throws IOException In case of an I/O exception.
    */
   public static int logout() throws IOException {
-    Response response = apiGet("/logout");
+    Response response = apiCall("/logout").execute();
     cookies.clear();
     csrfToken = null;
     return response.code();
   }
   
-  public static School jsonToSchool(String json) {
-    return gson.fromJson(json, School.class);
+  private static class CallbackFuture extends CompletableFuture<Response> implements Callback {
+    @Override
+    public void onFailure(@NotNull Call call, @NotNull IOException e) {
+      super.completeExceptionally(e);
+      e.printStackTrace();
+    }
+    
+    @Override
+    public void onResponse(@NotNull Call call, @NotNull Response response) {
+      super.complete(response);
+    }
+  }
+  
+  private static class Requests {
+    private static final Request SCHOOLS = new Request.Builder()
+        .url(BASE_URL + "/schools")
+        .method("GET", null)
+        .addHeader("User-Agent", USER_AGENT)
+        .build();
+    
+    private static Request login(Login l) {
+      MediaType json = MediaType.parse("application/json");
+      RequestBody body = RequestBody.create(gson.toJson(l), json);
+      return new Request.Builder()
+          .url(BASE_URL + "/login")
+          .method("POST", body)
+          .addHeader("User-Agent", USER_AGENT)
+          .addHeader("Content-Type", "application/json")
+          .build();
+    }
   }
 }
