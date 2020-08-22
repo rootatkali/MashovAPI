@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Contains the time, location and group ID of a lesson in a timetable.
  */
-public final class TimeTable implements Comparable<TimeTable>{
+public final class TimeTable implements Comparable<TimeTable> {
   private int groupId;
   private int day;
   private int lesson;

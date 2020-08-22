@@ -66,7 +66,8 @@ public final class Conversation {
   public String toString() {
     return MoreObjects.toStringHelper(this).add("conversationId", conversationId).add("subject",
         subject).add("sendTime", sendTime).add("isNew", isNew).add("hasDrafts", hasDrafts).add(
-            "hasAttachments", hasAttachments).add("messages", messages).add("labels", labels).add("preventReply", preventReply).toString();
+        "hasAttachments", hasAttachments).add("messages", messages).add("labels", labels).add("preventReply",
+        preventReply).toString();
   }
   
   @Override

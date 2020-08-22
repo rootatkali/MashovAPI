@@ -49,7 +49,7 @@ public final class BagrutGrade {
   public Integer getTest() {
     return test;
   }
-
+  
   public Integer getFinal() {
     return finalGrade;
   }

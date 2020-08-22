@@ -1,12 +1,11 @@
 package de.faceco.mashovapi.components;
 
-import java.util.Arrays;
-import java.util.Objects;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ComparisonChain;
-import com.google.gson.annotations.Expose;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * Represents a school registered in the Mashov system.

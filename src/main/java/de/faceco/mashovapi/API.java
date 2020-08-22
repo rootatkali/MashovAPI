@@ -132,7 +132,8 @@ public final class API {
   }
   
   /**
-   * Attempts to login to the Mashov system, using the selected school from {@link #fetchSchool(int)} or {@link #setSchool(School)}.
+   * Attempts to login to the Mashov system, using the selected school from {@link #fetchSchool(int)} or
+   * {@link #setSchool(School)}.
    *
    * <p>Returns a LoginResponse instance, which can be either a LoginInfo or a LoginFailed object. If the response is an
    * instance of LoginInfo, the user ID will be automatically set in the API.</p>
