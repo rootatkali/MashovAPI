@@ -285,6 +285,26 @@ public final class RequestController {
     async(apiCall("/students/" + uid + "/homework"), onResult, onFail, Homework[].class);
   }
   
+  public static Counts mailCounts() throws IOException {
+    Response response = apiCall("/mail/counts").execute();
+    return gson.fromJson(response.body().string(), Counts.class);
+  }
+  
+  public static Counts mailCountsAsync() throws IOException {
+    CallbackFuture future = new CallbackFuture();
+    
+    apiCall("/mail/counts").enqueue(future);
+    
+    try (Response response = future.get()) {
+      if (response.isSuccessful()) {
+        return gson.fromJson(response.body().string(), Counts.class);
+      } else throw new IOException(String.valueOf(response.code()));
+    } catch (InterruptedException | ExecutionException e) {
+      e.printStackTrace();
+      throw new RuntimeException();
+    }
+  }
+  
   public static Recipient[] recipients() throws IOException {
     Response response = apiCall("/mail/recipients").execute();
     return gson.fromJson(response.body().string(), Recipient[].class);
@@ -354,12 +374,20 @@ public final class RequestController {
   }
   
   public static Conversation[] inbox() throws IOException {
-    Response response = apiCall("/mail/inbox/conversations").execute();
+    return inbox(mailCounts().getInboxConversations());
+  }
+  
+  public static Conversation[] inbox(int take) throws IOException {
+    Response response = apiCall("/mail/inbox/conversations?take=" + take).execute();
     return gson.fromJson(response.body().string(), Conversation[].class);
   }
   
   public static void inboxAsync(Consumer<Conversation[]> onResult, Runnable onFail) throws IOException {
-    async(apiCall("/mail/inbox/conversations"), onResult, onFail, Conversation[].class);
+    inboxAsync(mailCountsAsync().getInboxConversations(), onResult, onFail);
+  }
+  
+  public static void inboxAsync(int take, Consumer<Conversation[]> onResult, Runnable onFail) throws IOException {
+    async(apiCall("/mail/inbox/conversations?take=" + take), onResult, onFail, Conversation[].class);
   }
   
   public static Conversation[] outbox() throws IOException {
@@ -479,7 +507,7 @@ public final class RequestController {
         .method("GET", null)
         .addHeader("User-Agent", USER_AGENT)
         .build();
-    
+  
     private static Request login(Login l) {
       MediaType json = MediaType.parse("application/json");
       RequestBody body = RequestBody.create(gson.toJson(l), json);

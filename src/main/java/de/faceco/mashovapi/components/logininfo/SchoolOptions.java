@@ -136,6 +136,17 @@ public class SchoolOptions {
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(this).add("hasParents", hasParents).add(
-        "hasParentsOutgoingMail", hasParentsOutgoingMail).add("hasParentsAlfon", hasParentsAlfon).add("hasParentsHistory", hasParentsHistory).add("hasParentsBehave", hasParentsBehave).add("hasParentsMaakav", hasParentsMaakav).add("hasParentsRegularGrades", hasParentsRegularGrades).add("hasParentsPeriodicGrades", hasParentsPeriodicGrades).add("denyStudentsJustificationRequests", denyStudentsJustificationRequests).add("allowStudentsGroupPlans", allowStudentsGroupPlans).add("denyTeachersToSendEmails", denyTeachersToSendEmails).add("denyInviteBbbExternalParticipant", denyInviteBbbExternalParticipant).add("forceFillLessonMethods", forceFillLessonMethods).add("offerToDuplicateAllLessons", offerToDuplicateAllLessons).add("maxGrade", maxGrade).add("maxPeriodGrade", maxPeriodGrade).add("hasBagrutGrades", hasBagrutGrades).add("hasNikud", hasNikud).add("schoolSite", schoolSite).add("moodleSite", moodleSite).add("iscoolSite", iscoolSite).add("schoolName", schoolName).add("schoolYears", schoolYears).add("isReadOnly", isReadOnly).add("denyTeachersEditStudentEvaluation", denyTeachersEditStudentEvaluation).toString();
+        "hasParentsOutgoingMail", hasParentsOutgoingMail).add("hasParentsAlfon", hasParentsAlfon).add(
+        "hasParentsHistory", hasParentsHistory).add("hasParentsBehave", hasParentsBehave).add("hasParentsMaakav",
+        hasParentsMaakav).add("hasParentsRegularGrades", hasParentsRegularGrades).add("hasParentsPeriodicGrades",
+        hasParentsPeriodicGrades).add("denyStudentsJustificationRequests", denyStudentsJustificationRequests).add(
+        "allowStudentsGroupPlans", allowStudentsGroupPlans).add("denyTeachersToSendEmails",
+        denyTeachersToSendEmails).add("denyInviteBbbExternalParticipant", denyInviteBbbExternalParticipant).add(
+        "forceFillLessonMethods", forceFillLessonMethods).add("offerToDuplicateAllLessons",
+        offerToDuplicateAllLessons).add("maxGrade", maxGrade).add("maxPeriodGrade", maxPeriodGrade).add(
+        "hasBagrutGrades", hasBagrutGrades).add("hasNikud", hasNikud).add("schoolSite", schoolSite).add(
+        "moodleSite", moodleSite).add("iscoolSite", iscoolSite).add("schoolName", schoolName).add(
+        "schoolYears", schoolYears).add("isReadOnly", isReadOnly).add("denyTeachersEditStudentEvaluation"
+        , denyTeachersEditStudentEvaluation).toString();
   }
 }

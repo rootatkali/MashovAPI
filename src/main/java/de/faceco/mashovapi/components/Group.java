@@ -50,7 +50,9 @@ public final class Group implements Comparable<Group> {
   
   @Override
   public String toString() {
-    return MoreObjects.toStringHelper(this).add("groupLevel", groupLevel).add("groupId", groupId).add("groupName", groupName).add("subjectName", subjectName).add("groupTeachers", groupTeachers).add("groupInactiveTeachers", groupInactiveTeachers).toString();
+    return MoreObjects.toStringHelper(this).add("groupLevel", groupLevel).add("groupId", groupId).add("groupName",
+        groupName).add("subjectName", subjectName).add("groupTeachers", groupTeachers).add("groupInactiveTeachers",
+        groupInactiveTeachers).toString();
   }
   
   @Override

@@ -48,7 +48,7 @@ public class APITest {
   @Test
   public void loginAsync() throws IOException {
     api.logout();
-    
+  
     api.loginAsync(2021, System.getenv("MASHOV_USER"), System.getenv("MASHOV_PASSWD"))
         .then(loginResponse -> {
           if (!(loginResponse instanceof LoginInfo)) fail();
@@ -63,7 +63,7 @@ public class APITest {
   @Test
   public void loginAsyncWrongPassword() throws IOException {
     api.logout();
-    
+  
     api.loginAsync(2021, System.getenv("MASHOV_USER"), "ThisIsNotMyPassword")
         .then(loginResponse -> fail())
         .fail(() -> System.out.println("Success"))
@@ -80,7 +80,7 @@ public class APITest {
     Recipient[] sync = api.getMailRecipients();
     
     final RecipientArrayHolder async = new RecipientArrayHolder();
-    
+  
     api.getMailRecipientsAsync()
         .then(async::setArray)
         .fail(Assert::fail)
@@ -196,7 +196,8 @@ public class APITest {
   @Test
   public void inbox() throws IOException {
     Conversation[] c = api.getInbox();
-    System.out.println(c.length);
+    Counts counts = RequestController.mailCounts(); // TODO implement API.getMailCounts()
+    assertEquals(counts.getInboxConversations(), c.length);
   }
   
   private static class RecipientArrayHolder {

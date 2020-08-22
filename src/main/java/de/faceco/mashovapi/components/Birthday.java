@@ -5,6 +5,7 @@ import de.faceco.mashovapi.API;
 /**
  * A class showing the user's birth date. Mashov returns all dates formatted as "yyyy-MM-ddThh:mm:ss".
  * Convenience methods convert the string to integers.
+ *
  * @see API#getBirthday()
  */
 public final class Birthday {

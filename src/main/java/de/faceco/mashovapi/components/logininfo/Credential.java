@@ -70,6 +70,7 @@ public class Credential {
   
   @Override
   public String toString() {
-    return MoreObjects.toStringHelper(this).add("sessionId", sessionId).add("userId", userId).add("idNumber", idNumber).add("userType", userType).add("roleUserType", roleUserType).add("schoolUserType", schoolUserType).add("idp", idp).add("hasAuthenticated", hasAuthenticated).add("hasStronglyAuthenticated", hasStronglyAuthenticated).add("semel", semel).add("year", year).add("correlationId", correlationId).toString();
+    return MoreObjects.toStringHelper(this).add("sessionId", sessionId).add("userId", userId).add("idNumber",
+        idNumber).add("userType", userType).add("roleUserType", roleUserType).add("schoolUserType", schoolUserType).add("idp", idp).add("hasAuthenticated", hasAuthenticated).add("hasStronglyAuthenticated", hasStronglyAuthenticated).add("semel", semel).add("year", year).add("correlationId", correlationId).toString();
   }
 }

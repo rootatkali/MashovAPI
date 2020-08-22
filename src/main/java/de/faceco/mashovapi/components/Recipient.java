@@ -51,7 +51,8 @@ public final class Recipient {
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(this).add("displayOrder", displayOrder).add("cssClass",
-        cssClass).add("value", value).add("valueType", valueType).add("targetType", targetType).add("displayName", displayName).add("isGroup", isGroup).toString();
+        cssClass).add("value", value).add("valueType", valueType).add("targetType", targetType).add("displayName",
+        displayName).add("isGroup", isGroup).toString();
   }
   
   @Override
