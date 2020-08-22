@@ -58,7 +58,7 @@ public final class SendMessage {
   private final boolean preventReply;
   private final String lastSaved;
   
-  private SendMessage(String messageId, String conversationId) {
+  SendMessage(String messageId, String conversationId) {
     this.messageId = messageId;
     this.conversationId = conversationId;
     this.senderId = API.getInstance().getStudentId();
@@ -83,7 +83,25 @@ public final class SendMessage {
     subject = c.getSubject();
     body = c.getMessages()[0].getBody();
   
-    Recipient[] recipients = API.getInstance().getMailRecipients();
+    class RecipientHolder {
+      Recipient[] list;
+    }
+  
+    RecipientHolder rh = new RecipientHolder();
+  
+    API.getInstance().getMailRecipientsAsync()
+        .then(recs -> rh.list = recs)
+        .fail(() -> {
+        })
+        .run();
+  
+    while (rh.list == null) {
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
   
     String sender = null;
     for (Message m : c.getMessages()) {
@@ -95,6 +113,8 @@ public final class SendMessage {
   
     Recipient og = null;
   
+    Recipient[] recipients = rh.list;
+  
     for (Recipient r : recipients) {
       if (r.getValue().equals(sender)) {
         og = r;
@@ -102,8 +122,15 @@ public final class SendMessage {
       }
     }
     if (og == null) throw new NullPointerException();
-    
+  
     this.recipients = new Recipient[]{og};
+  }
+  
+  public static SendMessage fromAsync(Conversation c) throws IOException {
+    Objects.requireNonNull(c);
+    SendMessage ret = new SendMessage(c);
+    ret.messageId = RequestController.msgIdReplyAsync(c);
+    return ret;
   }
   
   /**
@@ -120,6 +147,10 @@ public final class SendMessage {
     return ret;
   }
   
+  public static SendMessage asNewAsync() throws IOException {
+    return RequestController.msgNewAsync();
+  }
+  
   /**
    * Creates a new SendMessage instance using a new conversation.
    *
@@ -131,6 +162,10 @@ public final class SendMessage {
     SendMessage ret = new SendMessage(m.getMessageId(), m.getConversationId());
     ret.isNew = true;
     return ret;
+  }
+  
+  void setNew(boolean isNew) {
+    this.isNew = isNew;
   }
   
   /**
@@ -230,7 +265,8 @@ public final class SendMessage {
    * @return This.
    */
   public SendMessage attach(String path) throws IOException {
-    return attach(new File(path));
+    attach(new File(path));
+    return this;
   }
   
   /**
@@ -270,6 +306,10 @@ public final class SendMessage {
   public Message send() throws IOException {
     this.isNew = false;
     return RequestController.send(this);
+  }
+  
+  public API.DataTask<SendMessage, Message> sendAsync() {
+    return new API.DataTask<>(this, RequestController::sendAsync);
   }
   
   String getConversationId() {

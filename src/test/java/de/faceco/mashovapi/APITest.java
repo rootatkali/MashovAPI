@@ -30,15 +30,77 @@ public class APITest {
   }
   
   @Test
+  public void schoolsAsync() throws IOException {
+    api.getAllSchoolsAsync()
+        .then(schools -> {
+          outer:
+          {
+            for (School s : schools) {
+              if (s.getId() == Integer.parseInt(System.getenv("SCHOOL_ID"))) break outer;
+            }
+            fail();
+          }
+        })
+        .fail(() -> System.err.println("Fail"))
+        .run();
+  }
+  
+  @Test
+  public void loginAsync() throws IOException {
+    api.logout();
+    
+    api.loginAsync(2021, System.getenv("MASHOV_USER"), System.getenv("MASHOV_PASSWD"))
+        .then(loginResponse -> {
+          if (!(loginResponse instanceof LoginInfo)) fail();
+          LoginInfo li = (LoginInfo) loginResponse;
+          assertEquals(li.getAccessToken().getUsername(), System.getenv("MASHOV_USER"));
+        })
+        .fail(() -> {
+        })
+        .run();
+  }
+  
+  @Test
+  public void loginAsyncWrongPassword() throws IOException {
+    api.logout();
+    
+    api.loginAsync(2021, System.getenv("MASHOV_USER"), "ThisIsNotMyPassword")
+        .then(loginResponse -> fail())
+        .fail(() -> System.out.println("Success"))
+        .run();
+  }
+  
+  @Test
   public void recipients() throws IOException {
-    System.out.println(Arrays.toString(api.getMailRecipients()));
+    api.getMailRecipients();
+  }
+  
+  @Test
+  public void recipientsAsync() throws IOException {
+    Recipient[] sync = api.getMailRecipients();
+    
+    final RecipientArrayHolder async = new RecipientArrayHolder();
+    
+    api.getMailRecipientsAsync()
+        .then(async::setArray)
+        .fail(Assert::fail)
+        .run();
+    
+    assertArrayEquals(sync, async.array);
   }
   
   @Test
   public void sendMessageReply() throws IOException {
-    Conversation c = Arrays.stream(api.getInbox()).filter(conv -> conv.getConversationId().equals(System.getenv("MAIL_CONV"))).findAny().orElse(null);
+    Conversation c = Arrays.stream(api.getInbox()).filter(conv -> conv.getConversationId()
+        .equals(System.getenv("MAIL_CONV"))).findAny().orElse(null);
     SendMessage sm = SendMessage.from(c);
     assertEquals(System.getenv("MAIL_SENDER"), sm.getRecipients()[0].getValue());
+  }
+  
+  @After
+  public void after() throws IOException {
+    if (api.getStudentId() != null)
+      assertEquals(200, api.logout()); // Logout success code
   }
   
   @Test
@@ -51,7 +113,6 @@ public class APITest {
       }
     }
     assertTrue(nulls.size() > 0);
-    System.out.println(nulls);
   }
   
   @Test
@@ -83,14 +144,15 @@ public class APITest {
     Arrays.stream(times).forEach(Assert::assertNotNull);
   }
   
-  @SuppressWarnings("RedundantThrows")
-  @Test
+  @Test(expected = IOException.class)
   public void upload() throws IOException {
 //    File f = new File("/home/rotem/Documents/out.pdf");
 //    SendMessage test = SendMessage.asNew()
 //        .attach(f)
 //        .attach("/home/rotem/bitmap.png");
 //    System.out.println(test)
+    // TODO implement this test
+    throw new IOException();
   }
   
   @Test
@@ -129,18 +191,19 @@ public class APITest {
   public void behaves() throws IOException {
     Behave[] behaves = api.getBehaves();
     assertTrue(behaves.length > 0);
-    System.out.println(Arrays.toString(behaves));
   }
   
   @Test
   public void inbox() throws IOException {
     Conversation[] c = api.getInbox();
     System.out.println(c.length);
-    System.out.println(c[0].getMessages()[0].getBody());
   }
   
-  @After
-  public void after() throws IOException {
-    assertEquals(200, api.logout()); // Logout success code
+  private static class RecipientArrayHolder {
+    Recipient[] array;
+    
+    void setArray(Recipient[] array) {
+      this.array = array;
+    }
   }
 }
