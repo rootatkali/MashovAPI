@@ -462,16 +462,16 @@ public final class API {
     private Consumer<T> success;
     private Runnable fail;
     
-    GetTask(CheckedBiConsumer<Consumer<T>, Runnable, ? extends Exception> apiCall) {
-      this.apiCall = apiCall;
+    public GetTask(CheckedBiConsumer<Consumer<T>, Runnable, ? extends Exception> apiCall) {
+      this.apiCall = Objects.requireNonNull(apiCall);
     }
     
-    public GetTask<T> setOnSuccess(Consumer<T> onSuccess) {
+    public GetTask<T> then(Consumer<T> onSuccess) {
       success = onSuccess;
       return this;
     }
     
-    public GetTask<T> setOnFail(Runnable onFail) {
+    public GetTask<T> fail(Runnable onFail) {
       fail = onFail;
       return this;
     }
@@ -494,23 +494,22 @@ public final class API {
     
     public DataTask(T data, CheckedTriConsumer<T, Consumer<K>, Runnable, ? extends Exception> apiCall) {
       this.data = data;
-      this.apiCall = apiCall;
+      this.apiCall = Objects.requireNonNull(apiCall);
     }
     
-    public DataTask<T, K> setOnSuccess(Consumer<K> onSuccess) {
+    public DataTask<T, K> then(Consumer<K> onSuccess) {
+      if (onSuccess == null) throw new NullPointerException();
       success = onSuccess;
       return this;
     }
     
-    public DataTask<T, K> setOnFail(Runnable onFail) {
+    public DataTask<T, K> fail(Runnable onFail) {
+      if (onFail == null) throw new NullPointerException();
       fail = onFail;
       return this;
     }
     
     public void run() throws IOException {
-      if (success == null) throw new NullPointerException();
-      if (fail == null) throw new NullPointerException();
-      
       try {
         apiCall.accept(data, success, fail);
       } catch (Exception e) {

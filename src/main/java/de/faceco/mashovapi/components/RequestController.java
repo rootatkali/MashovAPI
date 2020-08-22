@@ -31,6 +31,8 @@ public final class RequestController {
   private static final Map<String, String> cookies = new HashMap<>();
   private static String csrfToken = null;
   
+  private static final String BLANK_MSG = "{\"isNew\":true,\"isDeleted\":false,\"body\":\"\"}";
+  
   public static School[] schools() throws IOException {
     Request request = Requests.SCHOOLS;
     Response response = http.newCall(request).execute();
@@ -293,52 +295,62 @@ public final class RequestController {
   }
   
   static String msgIdReply(Conversation c) throws IOException {
-    MediaType json = MediaType.parse("application/json");
-    RequestBody body = RequestBody.create(gson.toJson(new SendMessage(c).body("")), json);
-    
-    Request request = new Request.Builder()
-        .url(BASE_URL + "/mail/conversations/" + c.getConversationId() + "/draft")
-        .put(body)
-        .addHeader("User-Agent", USER_AGENT)
-        .addHeader("x-csrf-token", csrfToken)
-        .addHeader("Cookie", cookieHeader())
-        .build();
+    Request request = Requests.msgReply(c);
     Response response = http.newCall(request).execute();
     Message msg = gson.fromJson(response.body().string(), Message.class);
     return msg.getMessageId();
   }
   
-  static Message msgNew() throws IOException {
-    String blankMsg = "{\"isNew\":true,\"isDeleted\":false,\"body\":\"\"}";
-    MediaType json = MediaType.parse("application/json");
-    RequestBody body = RequestBody.create(blankMsg, json);
+  static String msgIdReplyAsync(Conversation c) throws IOException {
+    CallbackFuture future = new CallbackFuture();
+    http.newCall(Requests.msgReply(c)).enqueue(future);
     
-    Request request = new Request.Builder()
-        .url(BASE_URL + "/mail/conversations/draft")
-        .put(body)
-        .addHeader("User-Agent", USER_AGENT)
-        .addHeader("x-csrf-token", csrfToken)
-        .addHeader("Cookie", cookieHeader())
-        .build();
+    try {
+      Response response = future.get();
+      if (response.isSuccessful()) {
+        return gson.fromJson(response.body().string(), Message.class).getMessageId();
+      } else throw new IOException();
+    } catch (InterruptedException | ExecutionException e) {
+      e.printStackTrace();
+      throw new RuntimeException();
+    }
+  }
+  
+  static Message msgNew() throws IOException {
+    Request request = Requests.msgNew();
     Response response = http.newCall(request).execute();
     return gson.fromJson(response.body().string(), Message.class);
   }
   
-  public static Message send(SendMessage s) throws IOException {
-    String msg = gson.toJson(s);
+  static SendMessage msgNewAsync() throws IOException {
+    Call call = http.newCall(Requests.msgNew());
     
-    MediaType json = MediaType.parse("application/json");
-    RequestBody body = RequestBody.create(msg, json);
-    
-    Request request = new Request.Builder()
-        .url(BASE_URL + "/mail/messages/" + s.getMessageId())
-        .post(body)
-        .addHeader("User-Agent", USER_AGENT)
-        .addHeader("x-csrf-token", csrfToken)
-        .addHeader("Cookie", cookieHeader())
-        .build();
+    CallbackFuture future = new CallbackFuture();
+    call.enqueue(future);
+    try {
+      Response response = future.get();
+      if (response.isSuccessful()) {
+        Message result = gson.fromJson(response.body().string(), Message.class);
+        SendMessage sm = new SendMessage(result.getMessageId(), result.getConversationId());
+        sm.setNew(true);
+        return sm;
+      } else {
+        throw new IOException();
+      }
+    } catch (InterruptedException | ExecutionException e) {
+      e.printStackTrace();
+      throw new RuntimeException();
+    }
+  }
+  
+  static Message send(SendMessage s) throws IOException {
+    Request request = Requests.msgSend(s);
     Response response = http.newCall(request).execute();
     return gson.fromJson(response.body().string(), Message.class);
+  }
+  
+  static void sendAsync(SendMessage data, Consumer<Message> onResult, Runnable onFail) throws IOException {
+    async(Requests.msgSend(data), onResult, onFail, Message.class);
   }
   
   public static Conversation[] inbox() throws IOException {
@@ -447,6 +459,7 @@ public final class RequestController {
     return response.code();
   }
   
+  
   private static class CallbackFuture extends CompletableFuture<Response> implements Callback {
     @Override
     public void onFailure(@NotNull Call call, @NotNull IOException e) {
@@ -475,6 +488,47 @@ public final class RequestController {
           .method("POST", body)
           .addHeader("User-Agent", USER_AGENT)
           .addHeader("Content-Type", "application/json")
+          .build();
+    }
+  
+    private static Request msgNew() {
+      MediaType json = MediaType.parse("application/json");
+      RequestBody body = RequestBody.create(BLANK_MSG, json);
+    
+      return new Request.Builder()
+          .url(BASE_URL + "/mail/conversations/draft")
+          .put(body)
+          .addHeader("User-Agent", USER_AGENT)
+          .addHeader("x-csrf-token", csrfToken)
+          .addHeader("Cookie", cookieHeader())
+          .build();
+    }
+  
+    private static Request msgReply(Conversation c) throws IOException {
+      MediaType json = MediaType.parse("application/json");
+      RequestBody body = RequestBody.create(gson.toJson(new SendMessage(c).body("")), json);
+    
+      return new Request.Builder()
+          .url(BASE_URL + "/mail/conversations/" + c.getConversationId() + "/draft")
+          .put(body)
+          .addHeader("User-Agent", USER_AGENT)
+          .addHeader("x-csrf-token", csrfToken)
+          .addHeader("Cookie", cookieHeader())
+          .build();
+    }
+  
+    private static Request msgSend(SendMessage s) {
+      String msg = gson.toJson(s);
+    
+      MediaType json = MediaType.parse("application/json");
+      RequestBody body = RequestBody.create(msg, json);
+    
+      return new Request.Builder()
+          .url(BASE_URL + "/mail/messages/" + s.getMessageId())
+          .post(body)
+          .addHeader("User-Agent", USER_AGENT)
+          .addHeader("x-csrf-token", csrfToken)
+          .addHeader("Cookie", cookieHeader())
           .build();
     }
   }

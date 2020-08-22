@@ -32,7 +32,7 @@ public class APITest {
   @Test
   public void schoolsAsync() throws IOException {
     api.getAllSchoolsAsync()
-        .setOnSuccess(schools -> {
+        .then(schools -> {
           outer:
           {
             for (School s : schools) {
@@ -41,7 +41,7 @@ public class APITest {
             fail();
           }
         })
-        .setOnFail(() -> System.err.println("Fail"))
+        .fail(() -> System.err.println("Fail"))
         .run();
   }
   
@@ -50,12 +50,12 @@ public class APITest {
     api.logout();
     
     api.loginAsync(2021, System.getenv("MASHOV_USER"), System.getenv("MASHOV_PASSWD"))
-        .setOnSuccess(loginResponse -> {
+        .then(loginResponse -> {
           if (!(loginResponse instanceof LoginInfo)) fail();
           LoginInfo li = (LoginInfo) loginResponse;
           assertEquals(li.getAccessToken().getUsername(), System.getenv("MASHOV_USER"));
         })
-        .setOnFail(() -> {
+        .fail(() -> {
         })
         .run();
   }
@@ -65,8 +65,8 @@ public class APITest {
     api.logout();
     
     api.loginAsync(2021, System.getenv("MASHOV_USER"), "ThisIsNotMyPassword")
-        .setOnSuccess(loginResponse -> fail())
-        .setOnFail(() -> System.out.println("Success"))
+        .then(loginResponse -> fail())
+        .fail(() -> System.out.println("Success"))
         .run();
   }
   
@@ -82,8 +82,8 @@ public class APITest {
     final RecipientArrayHolder async = new RecipientArrayHolder();
     
     api.getMailRecipientsAsync()
-        .setOnSuccess(async::setArray)
-        .setOnFail(Assert::fail)
+        .then(async::setArray)
+        .fail(Assert::fail)
         .run();
     
     assertArrayEquals(sync, async.array);
@@ -144,14 +144,15 @@ public class APITest {
     Arrays.stream(times).forEach(Assert::assertNotNull);
   }
   
-  @SuppressWarnings("RedundantThrows")
-  @Test
+  @Test(expected = IOException.class)
   public void upload() throws IOException {
 //    File f = new File("/home/rotem/Documents/out.pdf");
 //    SendMessage test = SendMessage.asNew()
 //        .attach(f)
 //        .attach("/home/rotem/bitmap.png");
 //    System.out.println(test)
+    // TODO implement this test
+    throw new IOException();
   }
   
   @Test
