@@ -294,7 +294,7 @@ public final class RequestController {
     CallbackFuture future = new CallbackFuture();
     
     apiCall("/mail/counts").enqueue(future);
-    
+  
     try (Response response = future.get()) {
       if (response.isSuccessful()) {
         return gson.fromJson(response.body().string(), Counts.class);
@@ -303,6 +303,10 @@ public final class RequestController {
       e.printStackTrace();
       throw new RuntimeException();
     }
+  }
+  
+  public static void mailCountsAsync(Consumer<Counts> onResult, Runnable onFail) throws IOException {
+    async(apiCall("/mail/counts"), onResult, onFail, Counts.class);
   }
   
   public static Recipient[] recipients() throws IOException {
