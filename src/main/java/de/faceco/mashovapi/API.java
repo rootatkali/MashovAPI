@@ -323,8 +323,16 @@ public final class API {
     return new GetTask<>(RequestController::recipientsAsync);
   }
   
+  public Counts getMailCounts() throws IOException {
+    return RequestController.mailCounts();
+  }
+  
+  public GetTask<Counts> getMailCountsAsync() {
+    return new GetTask<>(RequestController::mailCountsAsync);
+  }
+  
   /**
-   * Attempts to fetch the first page of the user's inbox.
+   * Attempts to fetch the user's inbox.
    *
    * @return An array of Conversations.
    * @throws IOException In case of an I/O error.
@@ -339,15 +347,13 @@ public final class API {
   }
   
   /**
-   * Attempts to fetch the nth page of the user's inbox.
+   * Attempts to fetch a specific amount of conversations from the user's inbox
    *
-   * @param page The page in the inbox. First page is 0, and each page contains 20 conversations.
-   * @return An array of Conversations.
-   * @throws IOException In case of an I/O error.
-   * @deprecated Now returns all conversations. Use {@link #getInbox()} instead.
+   * @param take The amount of conversations to take
+   * @return A subset of the user's inbox
+   * @throws IOException If Mashov is being pesky.
    */
-  @Deprecated
-  public Conversation[] getInbox(int page) throws IOException {
+  public Conversation[] getInbox(int take) throws IOException {
     return RequestController.inbox();
   }
   
