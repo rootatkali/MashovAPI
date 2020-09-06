@@ -35,7 +35,9 @@ import java.util.function.Consumer;
 public final class API {
   private static API singleton;
   private School school;
-  private String uid; // Unique User ID gave by the Mashov interface
+  private String userId; // Unique User ID gave by the Mashov interface
+  private String deviceId;
+  
   
   private API() {
   
@@ -70,6 +72,14 @@ public final class API {
     this.school = school;
   }
   
+  public String getDeviceId() {
+    return deviceId;
+  }
+  
+  public void setDeviceId(String deviceId) {
+    this.deviceId = deviceId;
+  }
+  
   /**
    * Sets the school reference to null.
    */
@@ -77,8 +87,8 @@ public final class API {
     school = null;
   }
   
-  public void setUid(String uid) {
-    this.uid = uid;
+  public void setUserId(String userId) {
+    this.userId = userId;
   }
   
   /**
@@ -148,7 +158,7 @@ public final class API {
     LoginResponse lr = RequestController.login(new Login(school, year, user, pass));
     if (lr instanceof LoginInfo) {
       LoginInfo li = (LoginInfo) lr;
-      this.uid = li.getCredential().getUserId();
+      this.userId = li.getCredential().getUserId();
     }
     return lr;
   }
@@ -159,7 +169,7 @@ public final class API {
   }
   
   public String getStudentId() {
-    return uid;
+    return userId;
   }
   
   /**
@@ -169,59 +179,59 @@ public final class API {
    * @throws IOException If anything goes wrong.
    */
   public Grade[] getGrades() throws IOException {
-    return RequestController.grades(uid);
+    return RequestController.grades(userId);
   }
   
   public DataTask<String, Grade[]> getGradesAsync() {
-    return new DataTask<>(uid, RequestController::gradesAsync);
+    return new DataTask<>(userId, RequestController::gradesAsync);
   }
   
   public BagrutGrade[] getBagrutGrades() throws IOException {
-    return RequestController.bagrutGrades(uid);
+    return RequestController.bagrutGrades(userId);
   }
   
   public DataTask<String, BagrutGrade[]> getBagrutGradesAsync() {
-    return new DataTask<>(uid, RequestController::bagrutGradesAsync);
+    return new DataTask<>(userId, RequestController::bagrutGradesAsync);
   }
   
   public BagrutTime[] getBagrutTimes() throws IOException {
-    return RequestController.bagrutTimes(uid);
+    return RequestController.bagrutTimes(userId);
   }
   
   public DataTask<String, BagrutTime[]> getBagrutTimesAsync() {
-    return new DataTask<>(uid, RequestController::bagrutTimesAsync);
+    return new DataTask<>(userId, RequestController::bagrutTimesAsync);
   }
   
   public Hatama[] getHatamot() throws IOException {
-    return RequestController.hatamot(uid);
+    return RequestController.hatamot(userId);
   }
   
   public DataTask<String, Hatama[]> getHatamotAsync() {
-    return new DataTask<>(uid, RequestController::hatamotAsync);
+    return new DataTask<>(userId, RequestController::hatamotAsync);
   }
   
   public StudyMaterial[] getStudyMaterials() throws IOException {
-    return RequestController.studyMaterials(uid);
+    return RequestController.studyMaterials(userId);
   }
   
   public DataTask<String, StudyMaterial[]> getStudyMaterialsAsync() {
-    return new DataTask<>(uid, RequestController::studyMaterialsAsync);
+    return new DataTask<>(userId, RequestController::studyMaterialsAsync);
   }
   
   public Announcement[] getMessageBoard() throws IOException {
-    return RequestController.messageBoard(uid);
+    return RequestController.messageBoard(userId);
   }
   
   public DataTask<String, Announcement[]> getMessageBoardAsync() {
-    return new DataTask<>(uid, RequestController::messageBoardAsync);
+    return new DataTask<>(userId, RequestController::messageBoardAsync);
   }
   
   public Homework[] getHomework() throws IOException {
-    return RequestController.homework(uid);
+    return RequestController.homework(userId);
   }
   
   public DataTask<String, Homework[]> getHomeworkAsync() {
-    return new DataTask<>(uid, RequestController::homeworkAsync);
+    return new DataTask<>(userId, RequestController::homeworkAsync);
   }
   
   /**
@@ -231,11 +241,11 @@ public final class API {
    * @throws IOException If anything goes wrong.
    */
   public Birthday getBirthday() throws IOException {
-    return RequestController.birthday(uid);
+    return RequestController.birthday(userId);
   }
   
   public DataTask<String, Birthday> getBirthdayAsync() {
-    return new DataTask<>(uid, RequestController::birthdayAsync);
+    return new DataTask<>(userId, RequestController::birthdayAsync);
   }
   
   /**
@@ -261,11 +271,11 @@ public final class API {
    * @throws IOException In case of an emergency.
    */
   public Group[] getGroups() throws IOException {
-    return RequestController.groups(uid);
+    return RequestController.groups(userId);
   }
   
   public DataTask<String, Group[]> getGroupsAsync() {
-    return new DataTask<>(uid, RequestController::groupsAsync);
+    return new DataTask<>(userId, RequestController::groupsAsync);
   }
   
   /**
@@ -293,13 +303,13 @@ public final class API {
    * @throws IOException If the gerbil powering the entire system has stopped for a break.
    */
   public Lesson[] getTimetable() throws IOException {
-    Lesson[] timetable = RequestController.timetable(uid);
+    Lesson[] timetable = RequestController.timetable(userId);
     Arrays.sort(timetable);
     return timetable;
   }
   
   public DataTask<String, Lesson[]> getTimetableAsync() {
-    return new DataTask<>(uid, RequestController::timetableAsync);
+    return new DataTask<>(userId, RequestController::timetableAsync);
   }
   
   /**
@@ -401,11 +411,11 @@ public final class API {
    * @throws IOException If the servers are not behaving.
    */
   public Behave[] getBehaves() throws IOException {
-    return RequestController.behaves(uid);
+    return RequestController.behaves(userId);
   }
   
   public DataTask<String, Behave[]> getBehavesAsync() {
-    return new DataTask<>(uid, RequestController::behavesAsync);
+    return new DataTask<>(userId, RequestController::behavesAsync);
   }
   
   public MoodleInfo getMoodleInfo() throws IOException {
@@ -417,11 +427,11 @@ public final class API {
   }
   
   public MoodleAssignment[] getMoodleAssignments() throws IOException {
-    return RequestController.moodleAssignments(uid);
+    return RequestController.moodleAssignments(userId);
   }
   
   public DataTask<String, MoodleAssignment[]> getMoodleAssignmentsAsync() {
-    return new DataTask<>(uid, RequestController::moodleAssignmentsAsync);
+    return new DataTask<>(userId, RequestController::moodleAssignmentsAsync);
   }
   
   /**
@@ -432,7 +442,7 @@ public final class API {
    */
   public int logout() throws IOException {
     int logout = RequestController.logout();
-    uid = null;
+    userId = null;
     return logout;
   }
   
@@ -457,11 +467,11 @@ public final class API {
    * @see #getPicture()
    */
   public byte[] getPictureAsBytes() throws IOException {
-    return RequestController.picture(uid);
+    return RequestController.picture(userId);
   }
   
   public DataTask<String, byte[]> getPictureAsBytesAsync() {
-    return new DataTask<>(uid, RequestController::pictureAsync);
+    return new DataTask<>(userId, RequestController::pictureAsync);
   }
   
   public static final class GetTask<T> {
