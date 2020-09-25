@@ -32,6 +32,13 @@ public final class JustificationRequest {
     this.userGuid = userGuid;
   }
   
+  public JustificationRequest(DateTime endDate, int endLesson, Achva event, String requestComment,
+                              Justification justification, String requestedFiles, int requestStatus, DateTime startDate,
+                              int startLesson, String userGuid) {
+    this(endDate, endLesson, event.getCode(), requestComment, justification.getJustificationId(), requestedFiles,
+        requestStatus, startDate, startLesson, userGuid);
+  }
+  
   public String getEndDate() {
     return endDate;
   }
