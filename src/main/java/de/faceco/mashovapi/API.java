@@ -364,7 +364,7 @@ public final class API {
    * @throws IOException If Mashov is being pesky.
    */
   public Conversation[] getInbox(int take) throws IOException {
-    return RequestController.inbox();
+    return RequestController.inbox(take);
   }
   
   public Conversation[] getUnreadMail() throws IOException {

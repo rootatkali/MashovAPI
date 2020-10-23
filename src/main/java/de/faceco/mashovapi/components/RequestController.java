@@ -135,7 +135,7 @@ public final class RequestController {
     }
     String cookieHeader = sb.toString().trim();
     
-    if (cookieHeader.lastIndexOf(";") == cookieHeader.length() - 1) {
+    if (cookieHeader.length() > 0 && cookieHeader.lastIndexOf(";") == cookieHeader.length() - 1) {
       cookieHeader = cookieHeader.substring(0, cookieHeader.length() - 1);
     }
     return cookieHeader;
