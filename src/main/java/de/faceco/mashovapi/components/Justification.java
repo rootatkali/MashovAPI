@@ -7,13 +7,13 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Objects;
 
 public final class Justification implements Comparable<Justification> {
-  private String name;
+  private String justification;
   private boolean hidden;
   private int justificationId;
   private int displayOrder;
   
-  public String getName() {
-    return name;
+  public String getJustification() {
+    return justification;
   }
   
   public boolean isHidden() {
@@ -31,7 +31,7 @@ public final class Justification implements Comparable<Justification> {
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(this)
-        .add("name", name)
+        .add("name", justification)
         .add("hidden", hidden)
         .add("justificationId", justificationId)
         .add("displayOrder", displayOrder)
@@ -46,19 +46,19 @@ public final class Justification implements Comparable<Justification> {
     return hidden == that.hidden &&
         justificationId == that.justificationId &&
         displayOrder == that.displayOrder &&
-        Objects.equals(name, that.name);
+        Objects.equals(justification, that.justification);
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(name, hidden, justificationId, displayOrder);
+    return Objects.hash(justification, hidden, justificationId, displayOrder);
   }
   
   @Override
   public int compareTo(@NotNull Justification j) {
     return ComparisonChain.start()
         .compare(displayOrder, j.displayOrder)
-        .compare(name, j.name)
+        .compare(justification, j.justification)
         .compare(justificationId, j.justificationId)
         .result();
   }
