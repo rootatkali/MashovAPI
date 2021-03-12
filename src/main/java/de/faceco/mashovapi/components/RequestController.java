@@ -75,8 +75,11 @@ public final class RequestController {
     List<String> rawCookies = headers.values("Set-Cookie");
     for (String c : rawCookies) {
       String[] split = c.trim().split("=", 2);
-      cookies.put(split[0], split[1].substring(0, split[1].indexOf(";")));
+      if (!cookies.containsKey(split[0])) {
+        cookies.put(split[0], split[1].substring(0, split[1].indexOf(";")));
+      }
     }
+    API.getInstance().setDeviceId(cookies.get("uniquId"));
   }
   
   public static void loginAsync(Login l, Consumer<LoginInfo> onResult, Runnable onFail) throws IOException {
@@ -88,7 +91,7 @@ public final class RequestController {
       if (response.isSuccessful()) {
         handleCookies(request, response);
         LoginInfo li = gson.fromJson(response.body().string(), LoginInfo.class);
-        API.getInstance().setUid(li.getCredential().getUserId());
+        API.getInstance().setUserId(li.getCredential().getUserId());
         onResult.accept(li);
       } else {
         onFail.run();
@@ -99,6 +102,10 @@ public final class RequestController {
   }
   
   public static LoginResponse login(Login l) throws IOException {
+    if (API.getInstance().getDeviceId() != null) {
+      cookies.put("uniquId", API.getInstance().getDeviceId());
+    }
+    
     Request request = Requests.login(l);
     Response response = http.newCall(request).execute();
     
@@ -127,9 +134,9 @@ public final class RequestController {
           String.format("%s=%s; ", e.getKey(), e.getValue())
       );
     }
-    String cookieHeader = sb.toString();
+    String cookieHeader = sb.toString().trim();
     
-    if (cookieHeader.lastIndexOf(";") == cookieHeader.length() - 1) {
+    if (cookieHeader.length() > 0 && cookieHeader.lastIndexOf(";") == cookieHeader.length() - 1) {
       cookieHeader = cookieHeader.substring(0, cookieHeader.length() - 1);
     }
     return cookieHeader;
@@ -346,6 +353,10 @@ public final class RequestController {
     }
   }
   
+  public static void mailCountsAsync(Consumer<Counts> onResult, Runnable onFail) throws IOException {
+    async(apiCall("/mail/counts"), onResult, onFail, Counts.class);
+  }
+  
   public static Recipient[] recipients() throws IOException {
     Response response = apiCall("/mail/recipients").execute();
     return gson.fromJson(response.body().string(), Recipient[].class);
@@ -476,7 +487,7 @@ public final class RequestController {
     
     RequestBody body = new MultipartBody.Builder()
         .setType(MultipartBody.FORM)
-        .addFormDataPart("fileUpload", file.getName(), RequestBody.create(file, mediaType))
+        .addFormDataPart("fileUpload", file.getName(), RequestBody.create(mediaType, file))
         .build();
     
     Request request = new Request.Builder()
@@ -548,22 +559,23 @@ public final class RequestController {
         .method("GET", null)
         .addHeader("User-Agent", USER_AGENT)
         .build();
-  
+    
     private static Request login(Login l) {
       MediaType json = MediaType.parse("application/json");
-      RequestBody body = RequestBody.create(gson.toJson(l), json);
+      RequestBody body = RequestBody.create(json, gson.toJson(l));
       return new Request.Builder()
           .url(BASE_URL + "/login")
           .method("POST", body)
           .addHeader("User-Agent", USER_AGENT)
           .addHeader("Content-Type", "application/json")
+          .addHeader("Cookie", cookieHeader())
           .build();
     }
-  
+    
     private static Request msgNew() {
       MediaType json = MediaType.parse("application/json");
       RequestBody body = RequestBody.create(BLANK_MSG, json);
-    
+      
       return new Request.Builder()
           .url(BASE_URL + "/mail/conversations/draft")
           .put(body)
@@ -586,10 +598,11 @@ public final class RequestController {
           .build();
     }
   
+    
     private static Request msgReply(Conversation c) throws IOException {
       MediaType json = MediaType.parse("application/json");
-      RequestBody body = RequestBody.create(gson.toJson(new SendMessage(c).body("")), json);
-    
+      RequestBody body = RequestBody.create(json, gson.toJson(new SendMessage(c).body("")));
+      
       return new Request.Builder()
           .url(BASE_URL + "/mail/conversations/" + c.getConversationId() + "/draft")
           .put(body)
@@ -598,10 +611,10 @@ public final class RequestController {
           .addHeader("Cookie", cookieHeader())
           .build();
     }
-  
+    
     private static Request msgSend(SendMessage s) {
       String msg = gson.toJson(s);
-    
+  
       MediaType json = MediaType.parse("application/json");
       RequestBody body = RequestBody.create(msg, json);
     

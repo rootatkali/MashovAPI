@@ -51,7 +51,7 @@ public class APITest {
   
     api.loginAsync(2021, System.getenv("MASHOV_USER"), System.getenv("MASHOV_PASSWD"))
         .then(loginResponse -> {
-          if (!(loginResponse instanceof LoginInfo)) fail();
+          assertTrue(loginResponse instanceof LoginInfo);
           LoginInfo li = (LoginInfo) loginResponse;
           assertEquals(li.getAccessToken().getUsername(), System.getenv("MASHOV_USER"));
         })
@@ -82,7 +82,7 @@ public class APITest {
     final RecipientArrayHolder async = new RecipientArrayHolder();
   
     api.getMailRecipientsAsync()
-        .then(async::setArray)
+        .then(async::set)
         .fail(Assert::fail)
         .run();
     
@@ -196,14 +196,14 @@ public class APITest {
   @Test
   public void inbox() throws IOException {
     Conversation[] c = api.getInbox();
-    Counts counts = RequestController.mailCounts(); // TODO implement API.getMailCounts()
+    Counts counts = api.getMailCounts();
     assertEquals(counts.getInboxConversations(), c.length);
   }
   
   private static class RecipientArrayHolder {
     Recipient[] array;
-    
-    void setArray(Recipient[] array) {
+  
+    void set(Recipient[] array) {
       this.array = array;
     }
   }
