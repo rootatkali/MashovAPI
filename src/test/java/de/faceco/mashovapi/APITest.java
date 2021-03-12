@@ -82,7 +82,7 @@ public class APITest {
     final RecipientArrayHolder async = new RecipientArrayHolder();
   
     api.getMailRecipientsAsync()
-        .then(async::setArray)
+        .then(async::set)
         .fail(Assert::fail)
         .run();
     
@@ -202,8 +202,8 @@ public class APITest {
   
   private static class RecipientArrayHolder {
     Recipient[] array;
-    
-    void setArray(Recipient[] array) {
+  
+    void set(Recipient[] array) {
       this.array = array;
     }
   }

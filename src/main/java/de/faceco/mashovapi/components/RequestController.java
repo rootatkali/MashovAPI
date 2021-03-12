@@ -446,7 +446,7 @@ public final class RequestController {
     
     RequestBody body = new MultipartBody.Builder()
         .setType(MultipartBody.FORM)
-        .addFormDataPart("fileUpload", file.getName(), RequestBody.create(file, mediaType))
+        .addFormDataPart("fileUpload", file.getName(), RequestBody.create(mediaType, file))
         .build();
     
     Request request = new Request.Builder()
@@ -521,7 +521,7 @@ public final class RequestController {
     
     private static Request login(Login l) {
       MediaType json = MediaType.parse("application/json");
-      RequestBody body = RequestBody.create(gson.toJson(l), json);
+      RequestBody body = RequestBody.create(json, gson.toJson(l));
       return new Request.Builder()
           .url(BASE_URL + "/login")
           .method("POST", body)
@@ -546,7 +546,7 @@ public final class RequestController {
     
     private static Request msgReply(Conversation c) throws IOException {
       MediaType json = MediaType.parse("application/json");
-      RequestBody body = RequestBody.create(gson.toJson(new SendMessage(c).body("")), json);
+      RequestBody body = RequestBody.create(json, gson.toJson(new SendMessage(c).body("")));
       
       return new Request.Builder()
           .url(BASE_URL + "/mail/conversations/" + c.getConversationId() + "/draft")
@@ -559,9 +559,9 @@ public final class RequestController {
     
     private static Request msgSend(SendMessage s) {
       String msg = gson.toJson(s);
-      
+  
       MediaType json = MediaType.parse("application/json");
-      RequestBody body = RequestBody.create(msg, json);
+      RequestBody body = RequestBody.create(json, msg);
       
       return new Request.Builder()
           .url(BASE_URL + "/mail/messages/" + s.getMessageId())
