@@ -2,6 +2,7 @@ package de.faceco.mashovapi.components;
 
 import com.google.gson.Gson;
 import de.faceco.mashovapi.API;
+import de.faceco.mashovapi.JustificationResponse;
 import okhttp3.*;
 import org.apache.tika.Tika;
 import org.jetbrains.annotations.NotNull;
@@ -187,6 +188,46 @@ public final class RequestController {
   
   public static void bagrutTimesAsync(String uid, Consumer<BagrutTime[]> onResult, Runnable onFail) throws IOException {
     async(apiCall("/students/" + uid + "/bagrut/sheelonim"), onResult, onFail, BagrutTime[].class);
+  }
+  
+  public static Achva[] achvas() throws IOException {
+    Response response = apiCall("/achvas").execute();
+    return gson.fromJson(response.body().string(), Achva[].class);
+  }
+  
+  public static void achvasAsync(Consumer<Achva[]> onResult, Runnable onFail) throws IOException {
+    async(apiCall("/achvas"), onResult, onFail, Achva[].class);
+  }
+  
+  public static Justification[] justifications() throws IOException {
+    Response response = apiCall("/justifications").execute();
+    return gson.fromJson(response.body().string(), Justification[].class);
+  }
+  
+  public static void justificationsAsync(Consumer<Justification[]> onResult, Runnable onFail) throws IOException {
+    async(apiCall("/justifications"), onResult, onFail, Justification[].class);
+  }
+  
+  public static JustificationResponse[] justificationRequests(String uid) throws IOException {
+    Response response = apiCall("/students/" + uid + "/justificationrequests").execute();
+    return gson.fromJson(response.body().string(), JustificationResponse[].class);
+  }
+  
+  public static void justificationRequestsAsync(String uid, Consumer<JustificationResponse[]> onResult, Runnable onFail)
+      throws IOException {
+    async(apiCall("/students/" + uid + "/justificationrequests"), onResult, onFail, JustificationResponse[].class);
+  }
+  
+  public static JustificationResponse justificationRequest(JustificationRequest jRequest) throws IOException {
+    Request request = Requests.justification(jRequest);
+    Response response = http.newCall(request).execute();
+    return gson.fromJson(response.body().string(), JustificationResponse.class);
+  }
+  
+  public static void justificationRequestAsync(JustificationRequest jRequest,
+                                               Consumer<JustificationResponse> onResult, Runnable onFail)
+      throws IOException {
+    async(Requests.justification(jRequest), onResult, onFail, JustificationResponse.class);
   }
   
   public static Birthday birthday(String uid) throws IOException {
@@ -533,7 +574,7 @@ public final class RequestController {
     
     private static Request msgNew() {
       MediaType json = MediaType.parse("application/json");
-      RequestBody body = RequestBody.create(BLANK_MSG, json);
+      RequestBody body = RequestBody.create(json, BLANK_MSG);
       
       return new Request.Builder()
           .url(BASE_URL + "/mail/conversations/draft")
@@ -543,6 +584,20 @@ public final class RequestController {
           .addHeader("Cookie", cookieHeader())
           .build();
     }
+  
+    private static Request justification(JustificationRequest j) {
+      MediaType json = MediaType.parse("application/json");
+      RequestBody body = RequestBody.create(json, gson.toJson(j));
+    
+      return new Request.Builder()
+          .url(BASE_URL + "/students/" + j.getUserGuid() + "/justificationRequests")
+          .put(body)
+          .addHeader("User-Agent", USER_AGENT)
+          .addHeader("x-csrf-token", csrfToken)
+          .addHeader("Cookie", cookieHeader())
+          .build();
+    }
+  
     
     private static Request msgReply(Conversation c) throws IOException {
       MediaType json = MediaType.parse("application/json");
@@ -561,8 +616,8 @@ public final class RequestController {
       String msg = gson.toJson(s);
   
       MediaType json = MediaType.parse("application/json");
-      RequestBody body = RequestBody.create(json, msg);
-      
+      RequestBody body = RequestBody.create(msg, json);
+    
       return new Request.Builder()
           .url(BASE_URL + "/mail/messages/" + s.getMessageId())
           .post(body)
