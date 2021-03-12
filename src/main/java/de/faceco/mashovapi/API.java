@@ -186,6 +186,38 @@ public final class API {
     return new DataTask<>(userId, RequestController::gradesAsync);
   }
   
+  public Achva[] getAchvas() throws IOException {
+    return RequestController.achvas();
+  }
+  
+  public GetTask<Achva[]> getAchvasAsync() {
+    return new GetTask<>(RequestController::achvasAsync);
+  }
+  
+  public Justification[] getJustifications() throws IOException {
+    return RequestController.justifications();
+  }
+  
+  public GetTask<Justification[]> getJustificationsAsync() {
+    return new GetTask<>(RequestController::justificationsAsync);
+  }
+  
+  public JustificationResponse[] getJustificationRequests() throws IOException {
+    return RequestController.justificationRequests(userId);
+  }
+  
+  public DataTask<String, JustificationResponse[]> getJustificationRequestsAsync() {
+    return new DataTask<>(userId, RequestController::justificationRequestsAsync);
+  }
+  
+  public JustificationResponse sendJustificationRequest(JustificationRequest request) throws IOException {
+    return RequestController.justificationRequest(request);
+  }
+  
+  public DataTask<JustificationRequest, JustificationResponse> sendJustificationRequestAsync(JustificationRequest request) {
+    return new DataTask<>(request, RequestController::justificationRequestAsync);
+  }
+  
   public BagrutGrade[] getBagrutGrades() throws IOException {
     return RequestController.bagrutGrades(userId);
   }

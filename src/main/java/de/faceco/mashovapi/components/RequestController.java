@@ -574,7 +574,7 @@ public final class RequestController {
     
     private static Request msgNew() {
       MediaType json = MediaType.parse("application/json");
-      RequestBody body = RequestBody.create(BLANK_MSG, json);
+      RequestBody body = RequestBody.create(json, BLANK_MSG);
       
       return new Request.Builder()
           .url(BASE_URL + "/mail/conversations/draft")
@@ -587,7 +587,7 @@ public final class RequestController {
   
     private static Request justification(JustificationRequest j) {
       MediaType json = MediaType.parse("application/json");
-      RequestBody body = RequestBody.create(gson.toJson(j), json);
+      RequestBody body = RequestBody.create(json, gson.toJson(j));
     
       return new Request.Builder()
           .url(BASE_URL + "/students/" + j.getUserGuid() + "/justificationRequests")
